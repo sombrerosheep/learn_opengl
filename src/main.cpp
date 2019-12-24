@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv) {
   printf("Hello World\n");
-  /*
+
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -19,7 +19,8 @@ int main(int argc, char** argv) {
   }
 
   glfwMakeContextCurrent(window);
-  */
+
+  
   
   return 0;
 }

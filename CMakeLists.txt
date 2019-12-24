@@ -16,13 +16,7 @@ set(learn-opengl_source_dir "${CMAKE_SOURCE_DIR}/src")
 set(learn-opengl_include_dir "${CMAKE_SOURCE_DIR}/include")
 
 # Check for 64 or 32 bit
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  set(ARCH_64 TRUE)
-  set(PROCESSOR_ARCH "x64")
-else()
-  set(ARCH_64 FALSE)
-  set(PROCESSOR_ARCH "x86")
-endif()
+set(PROCESSOR_ARCH "x64")
 
 # Dependencies
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -30,13 +24,14 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory($ENV{GLFW_SRC} "$ENV{GLFW_SRC}/build")
 
+file(TO_CMAKE_PATH "$ENV{GLAD_SRC}/glad.c" GLAD_SRC_C)
+
 ##### Info output #####
 message(STATUS "")
 message(STATUS "Building ${CMAKE_PROJECT_NAME} Version ${PROJECT_VERSION}")
 message(STATUS "${learn-opengl_description}")
 message(STATUS "")
 message(STATUS "Platform:   ${CMAKE_SYSTEM}")
-message(STATUS "64-bit:     ${ARCH_64}")
 message(STATUS "Compiler:   ${CMAKE_CXX_COMPILER}")
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "")
@@ -48,6 +43,7 @@ message(STATUS "")
 #### Build ####
 file(GLOB learn-opengl_source
   "${learn-opengl_source_dir}/[a-z0-9_-]*.c*"
+  "${CMAKE_SRC_C}"
 )
 add_executable(learn-opengl ${learn-opengl_source})
 
