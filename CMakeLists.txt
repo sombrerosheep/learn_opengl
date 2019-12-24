@@ -24,7 +24,7 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory($ENV{GLFW_SRC} "$ENV{GLFW_SRC}/build")
 
-file(TO_CMAKE_PATH "$ENV{GLAD_SRC}/glad.c" GLAD_SRC_C)
+file(TO_CMAKE_PATH "$ENV{GLAD_SRC}/src/glad.c" GLAD_SRC_C)
 
 ##### Info output #####
 message(STATUS "")
@@ -43,7 +43,7 @@ message(STATUS "")
 #### Build ####
 file(GLOB learn-opengl_source
   "${learn-opengl_source_dir}/[a-z0-9_-]*.c*"
-  "${CMAKE_SRC_C}"
+  "${GLAD_SRC_C}"
 )
 add_executable(learn-opengl ${learn-opengl_source})
 

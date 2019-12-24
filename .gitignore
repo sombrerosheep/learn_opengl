@@ -3,5 +3,8 @@
 \#*\#
 .\#*
 
+# vscode temp
+.vscode/
+
 # CMake output
 build/
