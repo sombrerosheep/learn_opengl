@@ -6,6 +6,12 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
   glViewport(0, 0, width, height);
 }
 
+void process_input(GLFWwindow *window) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, true);
+  }
+}
+
 int main(int argc, char** argv) {
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -31,6 +37,11 @@ int main(int argc, char** argv) {
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
   while (!glfwWindowShouldClose(window)) {
+    process_input(window);
+
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
