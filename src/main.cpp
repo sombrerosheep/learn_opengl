@@ -14,6 +14,12 @@ const char *fragmentShaderSource = "#version 330 core\n"
   "FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
   "}\0";
 
+const char *yellowFragmentShaderSource = "#version 330 core\n"
+  "out vec4 FragColor;\n"
+  "void main() {\n"
+  "FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+  "}\0";
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
   glViewport(0, 0, width, height);
 }
@@ -21,6 +27,28 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, true);
+  }
+}
+
+void shader_compilation_status(unsigned int shader) {
+  int success;
+  char infoLog[512];
+
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+  if (!success) {
+    glGetShaderInfoLog(shader, 512, NULL, infoLog);
+    printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED: %s\n", infoLog);
+  }
+}
+
+void shader_program_link_status(unsigned int program) {
+  int success;
+  char infoLog[512];
+  
+  glGetProgramiv(program, GL_LINK_STATUS, &success);
+  if (!success) {
+    glGetProgramInfoLog(program, 512, NULL, infoLog);
+    printf("ERROR::SHADER::PROGRAM::LINK_FAILED: %s\n", infoLog);
   }
 }
 
@@ -52,39 +80,38 @@ int main(int argc, char** argv) {
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
   glCompileShader(vertexShader);
-
-  int success;
-  char infoLog[512];
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-    printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED: %s\n", infoLog);
-  }
-
+  shader_compilation_status(vertexShader);
+  
   unsigned int fragmentShader;
   fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
   glCompileShader(fragmentShader);
+  shader_compilation_status(fragmentShader);
 
-  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-    printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED: %s\n", infoLog);
-  }
-
+  unsigned int yellowFragmentShader;
+  yellowFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(yellowFragmentShader, 1, &yellowFragmentShaderSource, NULL);
+  glCompileShader(yellowFragmentShader);
+  shader_compilation_status(yellowFragmentShader);
+  
   unsigned int shaderProgram;
   shaderProgram = glCreateProgram();
   glAttachShader(shaderProgram, vertexShader);
   glAttachShader(shaderProgram, fragmentShader);
   glLinkProgram(shaderProgram);
+  shader_program_link_status(shaderProgram);  
+
+  unsigned int yellowShaderProgram;
+  yellowShaderProgram = glCreateProgram();
+  glAttachShader(yellowShaderProgram, vertexShader);
+  glAttachShader(yellowShaderProgram, yellowFragmentShader);
+  glLinkProgram(yellowShaderProgram);
+  shader_program_link_status(yellowShaderProgram);
   
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-  if (!success) {
-    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-    printf("ERROR::SHADER::PROGRAM::LINK_FAILED: %s\n", infoLog);
-  }
+  
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
+  glDeleteShader(yellowFragmentShader);
 
   float vertices1[] = {
     0.5f, -0.5f, 0.0f,
@@ -125,6 +152,7 @@ int main(int argc, char** argv) {
     glBindVertexArray(VAO[0]);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
+    glUseProgram(yellowShaderProgram);
     glBindVertexArray(VAO[1]);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     
