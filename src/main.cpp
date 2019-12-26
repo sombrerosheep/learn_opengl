@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cmath>
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -7,14 +8,13 @@ const char *vertexShaderSource = "#version 330 core\n"
   "out vec4 vertexColor;\n"
   "void main() {\n"
   "gl_Position = vec4(aPos, 1.0);\n"
-  "vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
   "}\0";
 
 const char *fragmentShaderSource = "#version 330 core\n"
   "out vec4 FragColor;\n"
-  "in vec4 vertexColor;\n"
+  "uniform vec4 ourColor;\n"
   "void main() {\n"
-  "FragColor = vertexColor;\n"
+  "FragColor = ourColor;\n"
   "}\0";
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -119,6 +119,12 @@ int main(int argc, char** argv) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(shaderProgram);
+    
+    float timeValue = glfwGetTime();
+    float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+    int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+    glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+    
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
