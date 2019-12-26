@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cmath>
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -66,9 +67,12 @@ int main(int argc, char** argv) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     ourShader.use();
-
+    float timeValue = glfwGetTime();
+    float value = sin(timeValue) / 2.0f;
+    ourShader.setFloat("xOffset", value);
+    
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 3);    
 
     glfwSwapBuffers(window);
     glfwPollEvents();
