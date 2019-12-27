@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 
   Shader ourShader("shaders/basic/shader.vert", "shaders/basic/shader.frag");
 
- float vertices[] = {
+  float vertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
@@ -170,6 +170,8 @@ int main(int argc, char** argv) {
   // projection matrix for the camera
   glm::mat4 projection;
   projection = glm::perspective(glm::radians(45.0f), (float)(screenWidth / screenHeight), 0.1f, 100.0f);
+
+  glEnable(GL_DEPTH_TEST);
   
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
@@ -182,7 +184,7 @@ int main(int argc, char** argv) {
     blend = clampZeroOne(blend);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
  
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture1);
