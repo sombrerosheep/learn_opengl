@@ -18,6 +18,16 @@ void process_input(GLFWwindow *window) {
   }
 }
 
+float clampZeroOne(float value) {
+  if (value > 1.0f) {
+    return 1.0f;
+  } else if (value < 0.0f) {
+    return 0.0f;
+  }
+
+  return value;
+}
+
 int main(int argc, char** argv) {
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -45,10 +55,10 @@ int main(int argc, char** argv) {
   Shader ourShader("shaders/basic/shader.vert", "shaders/basic/shader.frag");
 
   float vertices[] = {
-    0.5f, 0.5f, 0.0f,      1.0f, 0.0f, 0.0f,      0.55f, 0.55f, // top-right
-    0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,      0.55f, 0.45f, // bot-right
-    -0.5f, -0.5f, 0.0f,    0.0f, 0.0f, 1.0f,      0.45f, 0.45f, // bot-left
-    -0.5f, 0.5f, 0.0f,     1.0f, 1.0f, 0.0f,      0.45f, 0.55f  // top-left
+    0.5f, 0.5f, 0.0f,      1.0f, 0.0f, 0.0f,      1.0f, 1.0f,
+    0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,      1.0f, 0.0f,
+    -0.5f, -0.5f, 0.0f,    0.0f, 0.0f, 1.0f,      0.0f, 0.0f,
+    -0.5f, 0.5f, 0.0f,     1.0f, 1.0f, 0.0f,      0.0f, 1.0f
   };
   unsigned int indices[] = {
     0, 1, 3,
@@ -79,10 +89,10 @@ int main(int argc, char** argv) {
   glGenTextures(1, &texture1);
   glBindTexture(GL_TEXTURE_2D, texture1);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   int width, height, nrChannels;
   unsigned char *data = stbi_load("textures/container.jpg", &width, &height, &nrChannels, 0);
@@ -99,10 +109,10 @@ int main(int argc, char** argv) {
   glGenTextures(1, &texture2);
   glBindTexture(GL_TEXTURE_2D, texture2);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   data = stbi_load("textures/awesomeface.png", &width, &height, &nrChannels, 0);
   if (data) {
@@ -116,9 +126,19 @@ int main(int argc, char** argv) {
   ourShader.use();
   ourShader.setInt("texture1", 0);
   ourShader.setInt("texture2", 1);
+
+
+  float blend = 0.0f;
   
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+      blend += 0.01f * glfwGetTime() / 1000.f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+      blend -= 0.01f * glfwGetTime() / 1000.f;
+    }
+    blend = clampZeroOne(blend);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -129,6 +149,7 @@ int main(int argc, char** argv) {
     glBindTexture(GL_TEXTURE_2D, texture2);
 
     ourShader.use();
+    ourShader.setFloat("blend", blend);
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
