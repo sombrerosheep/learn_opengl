@@ -51,14 +51,16 @@ add_executable(learn-opengl ${learn-opengl_source})
 if(MSVC)
   set(GLFW_INCLUDE "$ENV{GLFW_SRC}/include")
   set(GLAD_INCLUDE "$ENV{GLAD_SRC}/include")
+  set(GLM_INCLUDE "$ENV{GLM_SRC}")
 
   target_link_libraries(learn-opengl "$ENV{GLFW_SRC}/build/src/Debug/glfw3.lib")
 elseif(UNIX)
 # TODO: ...this
   set(GLFW_INCLUDE "$ENV{GLFW_SRC}/include")
   set(GLAD_INCLUDE "$ENV{GLAD_SRC}/include")
-  
+  set(GLM_INCLUDE "$ENV{GLM_SRC}")
+
   target_link_libraries(learn-opengl glfw3 GL X11 pthread Xrandr Xi dl)
 endif()
 
-target_include_directories(learn-opengl PUBLIC ${learn-opengl_include_dir} ${GLFW_INCLUDE} ${GLAD_INCLUDE})
+target_include_directories(learn-opengl PUBLIC ${learn-opengl_include_dir} ${GLFW_INCLUDE} ${GLAD_INCLUDE} ${GLM_INCLUDE})
