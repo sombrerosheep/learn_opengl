@@ -156,11 +156,18 @@ int main(int argc, char** argv) {
     ourShader.setFloat("blend", blend);
 
     glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
     trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
     ourShader.setMat4("transform", trans);
 
     glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    float t = sin(glfwGetTime());
+    trans = glm::mat4(1.0f);
+    trans = glm::translate(trans, glm::vec3(-0.5, 0.5, 0.0f));
+    trans = glm::scale(trans, glm::vec3(t, t, 0.0f));
+    ourShader.setMat4("transform", trans);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glfwSwapBuffers(window);
