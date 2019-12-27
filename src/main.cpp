@@ -137,10 +137,10 @@ int main(int argc, char** argv) {
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-      blend += 0.01f * glfwGetTime() / 1000.f;
+      blend += 0.025f * glfwGetTime() / 1000.f;
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-      blend -= 0.01f * glfwGetTime() / 1000.f;
+      blend -= 0.025f * glfwGetTime() / 1000.f;
     }
     blend = clampZeroOne(blend);
 
@@ -156,8 +156,8 @@ int main(int argc, char** argv) {
     ourShader.setFloat("blend", blend);
 
     glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
     trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
     ourShader.setMat4("transform", trans);
 
     glBindVertexArray(VAO);
