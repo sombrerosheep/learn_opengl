@@ -13,6 +13,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
 
+const int screenHeight = 600;
+const int screenWidth = 800;
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
   glViewport(0, 0, width, height);
 }
@@ -39,7 +42,7 @@ int main(int argc, char** argv) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "LearnOpenGL", NULL, NULL);
 
   if (window == NULL) {
     printf("Failed to create GLFW window\n");
@@ -133,14 +136,26 @@ int main(int argc, char** argv) {
   ourShader.setInt("texture2", 1);
 
   float blend = 0.2f;
+
+
+  // Move me
+  // model matrix. rotated -55deg on teh x axis
+  glm::mat4 model = glm::mat4(1.0f);
+  model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+  // view matrix, take the camera back a bit (to see the model)
+  glm::mat4 view = glm::mat4(1.0f);
+  view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+  // projection matrix for the camera
+  glm::mat4 projection;
+  projection = glm::perspective(glm::radians(45.0f), (float)(screenWidth / screenHeight), 0.1f, 100.0f);
   
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-      blend += 0.025f * glfwGetTime() / 1000.f;
+      blend += 0.015f * glfwGetTime() / 1000.f;
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-      blend -= 0.025f * glfwGetTime() / 1000.f;
+      blend -= 0.015f * glfwGetTime() / 1000.f;
     }
     blend = clampZeroOne(blend);
 
@@ -154,20 +169,11 @@ int main(int argc, char** argv) {
 
     ourShader.use();
     ourShader.setFloat("blend", blend);
-
-    glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-    ourShader.setMat4("transform", trans);
+    ourShader.setMat4("model", model);
+    ourShader.setMat4("view", view);
+    ourShader.setMat4("projection", projection);
 
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    float t = sin(glfwGetTime());
-    trans = glm::mat4(1.0f);
-    trans = glm::translate(trans, glm::vec3(-0.5, 0.5, 0.0f));
-    trans = glm::scale(trans, glm::vec3(t, t, 0.0f));
-    ourShader.setMat4("transform", trans);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glfwSwapBuffers(window);
