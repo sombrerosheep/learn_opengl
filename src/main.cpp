@@ -16,15 +16,12 @@
 const int screenHeight = 600;
 const int screenWidth = 800;
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-  glViewport(0, 0, width, height);
-}
+float blend = 0.2;
+float cameraSpeed = 0.01f;
 
-void process_input(GLFWwindow *window) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-    glfwSetWindowShouldClose(window, true);
-  }
-}
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 float clampZeroOne(float value) {
   if (value > 1.0f) {
@@ -34,6 +31,37 @@ float clampZeroOne(float value) {
   }
 
   return value;
+}
+
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+  glViewport(0, 0, width, height);
+}
+
+void process_input(GLFWwindow *window) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, true);
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+    blend += 0.015f * glfwGetTime() / 1000.f;
+  }
+  if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+    blend -= 0.015f * glfwGetTime() / 1000.f;
+  }
+  blend = clampZeroOne(blend);
+
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    cameraPos += cameraSpeed * cameraFront;
+  }
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    cameraPos -= cameraSpeed * cameraFront;
+  }
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+  }
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+  }
 }
 
 int main(int argc, char** argv) {
@@ -175,17 +203,6 @@ int main(int argc, char** argv) {
   ourShader.setInt("texture1", 0);
   ourShader.setInt("texture2", 1);
 
-  float blend = 0.2f;
-
-  glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-  glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-  glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-
-  glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-
-  glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-
   // projection matrix for the camera
   glm::mat4 projection;
   projection = glm::perspective(glm::radians(45.0f), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
@@ -194,13 +211,6 @@ int main(int argc, char** argv) {
   
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-      blend += 0.015f * glfwGetTime() / 1000.f;
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-      blend -= 0.015f * glfwGetTime() / 1000.f;
-    }
-    blend = clampZeroOne(blend);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -210,11 +220,8 @@ int main(int argc, char** argv) {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture2);
 
-    float radius = 10.0f;
-    float camX = sin(glfwGetTime()) * radius;
-    float camZ = cos(glfwGetTime()) * radius;
     glm::mat4 view;
-    view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
     ourShader.use();
     ourShader.setFloat("blend", blend);
