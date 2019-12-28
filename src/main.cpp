@@ -214,8 +214,13 @@ int main(int argc, char** argv) {
     for (unsigned int i = 0; i < 10; i++) {
       glm::mat4 model = glm::mat4(1.0f);
       model = glm::translate(model, cubePositions[i]);
-      float angle = 20.f * i;
-      model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+      if (i % 3 == 0) {
+        float angle = glfwGetTime() * glm::radians(50.f);
+        model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
+      } else {
+        float angle = 20.f * i;
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+      }
       ourShader.setMat4("model", model);
 
       glDrawArrays(GL_TRIANGLES, 0, 36);
