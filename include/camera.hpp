@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include <stdio.h>
+
 enum Camera_Movement {
   FORWARD,
   BACKWARD,
@@ -83,7 +85,6 @@ public:
     if (direction == RIGHT) {
       Position += Right * velocity;
     }
-    Position.y = 0.0f;
   }
 
   void ProcessMouseMovement(float xOffset, float yOffset, GLboolean constrainPitch = true) {
