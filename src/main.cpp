@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <shader.hpp>
+#include <camera.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -16,22 +17,15 @@
 const int screenHeight = 600;
 const int screenWidth = 800;
 
-bool firstMouse = true;
-
 float blend = 0.2f;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-float lastX = 400.f;
-float lastY = 400.f;
-float yaw = 0.0f;
-float pitch = 0.0f;
-
-float fov = 45.0f;
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = screenHeight / 2.0f;
+float lastY = screenWidth / 2.0f;
+bool firstMouse = true;
 
 float clampZeroOne(float value) {
   if (value > 1.0f) {
@@ -63,16 +57,16 @@ void process_input(GLFWwindow *window) {
   blend = clampZeroOne(blend);
 
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-    cameraPos += cameraSpeed * cameraFront;
+    camera.ProcessKeyboard(FORWARD, deltaTime);
   }
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-    cameraPos -= cameraSpeed * cameraFront;
+    camera.ProcessKeyboard(BACKWARD, deltaTime);
   }
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-    cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    camera.ProcessKeyboard(LEFT, deltaTime);
   }
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-    cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    camera.ProcessKeyboard(RIGHT, deltaTime);
   }
 }
 
@@ -82,42 +76,18 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
     lastY = (float)ypos;
     firstMouse = false;
   }
+
   float xOffset = (float)xpos - lastX;
-  float yOffset = lastY - (float)ypos; // reversed since y-coord range from bot to top
+  float yOffset = lastY - (float)ypos;
+  
   lastX = (float)xpos;
   lastY = (float)ypos;
 
-  float sensitivity = 0.05f;
-  xOffset *= sensitivity;
-  yOffset *= sensitivity;
-
-  yaw += xOffset;
-  pitch += yOffset;
-
-  if (pitch > 89.0f) {
-    pitch = 89.0f;
-  }
-  if (pitch < -89.0f) {
-    pitch = -89.0f;
-  }
-
-  glm::vec3 front;
-  front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-  front.y = sin(glm::radians(pitch));
-  front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-  cameraFront = glm::normalize(front);
+  camera.ProcessMouseMovement(xOffset, yOffset);
 }
 
 void scroll_callback(GLFWwindow *window, double xOffset, double yOffset) {
-  if (fov >= 1.0f && fov <= 45.0f) {
-    fov -= (float)yOffset;
-  }
-  if (fov <= 1.0f) {
-    fov = 1.0f;
-  }
-  if (fov >= 45.0f) {
-    fov = 45.0f;
-  }
+  camera.ProcessMouseScroll((float)yOffset);
 }
 
 int main(int argc, char** argv) {
@@ -280,16 +250,14 @@ int main(int argc, char** argv) {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture2);
 
-    glm::mat4 view;
-    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    glm::mat4 projection;
-    projection = glm::perspective(glm::radians(fov), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
-
-
     ourShader.use();
     ourShader.setFloat("blend", blend);
-    ourShader.setMat4("view", view);
+
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
     ourShader.setMat4("projection", projection);
+
+    glm::mat4 view = camera.GetViewMatrix();
+    ourShader.setMat4("view", view);
 
     glBindVertexArray(VAO);
     
