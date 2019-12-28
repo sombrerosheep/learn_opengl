@@ -28,6 +28,7 @@ float lastY = 400.f;
 float yaw = 0.0f;
 float pitch = 0.0f;
 
+float fov = 45.0f;
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -104,7 +105,19 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
   front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
   front.y = sin(glm::radians(pitch));
   front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-  cameraFront = glm::normalize(front);		
+  cameraFront = glm::normalize(front);
+}
+
+void scroll_callback(GLFWwindow *window, double xOffset, double yOffset) {
+  if (fov >= 1.0f && fov <= 45.0f) {
+    fov -= (float)yOffset;
+  }
+  if (fov <= 1.0f) {
+    fov = 1.0f;
+  }
+  if (fov >= 45.0f) {
+    fov = 45.0f;
+  }
 }
 
 int main(int argc, char** argv) {
@@ -131,6 +144,7 @@ int main(int argc, char** argv) {
   glViewport(0, 0, 800, 600);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
+  glfwSetScrollCallback(window, scroll_callback);
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -249,10 +263,6 @@ int main(int argc, char** argv) {
   ourShader.setInt("texture1", 0);
   ourShader.setInt("texture2", 1);
 
-  // projection matrix for the camera
-  glm::mat4 projection;
-  projection = glm::perspective(glm::radians(45.0f), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
-
   glEnable(GL_DEPTH_TEST);
   
   while (!glfwWindowShouldClose(window)) {
@@ -272,6 +282,9 @@ int main(int argc, char** argv) {
 
     glm::mat4 view;
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    glm::mat4 projection;
+    projection = glm::perspective(glm::radians(fov), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+
 
     ourShader.use();
     ourShader.setFloat("blend", blend);
