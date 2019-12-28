@@ -17,7 +17,9 @@ const int screenHeight = 600;
 const int screenWidth = 800;
 
 float blend = 0.2;
-float cameraSpeed = 0.01f;
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -38,6 +40,8 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 }
 
 void process_input(GLFWwindow *window) {
+  float cameraSpeed = 2.5f * deltaTime;
+  
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, true);
   }
@@ -210,6 +214,10 @@ int main(int argc, char** argv) {
   glEnable(GL_DEPTH_TEST);
   
   while (!glfwWindowShouldClose(window)) {
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+    
     process_input(window);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
