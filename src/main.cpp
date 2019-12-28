@@ -16,10 +16,17 @@
 const int screenHeight = 600;
 const int screenWidth = 800;
 
-float blend = 0.2;
+bool firstMouse = true;
+
+float blend = 0.2f;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+float lastX = 400.f;
+float lastY = 400.f;
+float yaw = 0.0f;
+float pitch = 0.0f;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -47,10 +54,10 @@ void process_input(GLFWwindow *window) {
   }
 
   if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-    blend += 0.015f * glfwGetTime() / 1000.f;
+    blend += 0.015f * (float)glfwGetTime() / 1000.f;
   }
   if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-    blend -= 0.015f * glfwGetTime() / 1000.f;
+    blend -= 0.015f * (float)glfwGetTime() / 1000.f;
   }
   blend = clampZeroOne(blend);
 
@@ -66,6 +73,38 @@ void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
     cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
   }
+}
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+  if (firstMouse) {
+    lastX = (float)xpos;
+    lastY = (float)ypos;
+    firstMouse = false;
+  }
+  float xOffset = (float)xpos - lastX;
+  float yOffset = lastY - (float)ypos; // reversed since y-coord range from bot to top
+  lastX = (float)xpos;
+  lastY = (float)ypos;
+
+  float sensitivity = 0.05f;
+  xOffset *= sensitivity;
+  yOffset *= sensitivity;
+
+  yaw += xOffset;
+  pitch += yOffset;
+
+  if (pitch > 89.0f) {
+    pitch = 89.0f;
+  }
+  if (pitch < -89.0f) {
+    pitch = -89.0f;
+  }
+
+  glm::vec3 front;
+  front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+  front.y = sin(glm::radians(pitch));
+  front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+  cameraFront = glm::normalize(front);		
 }
 
 int main(int argc, char** argv) {
@@ -91,6 +130,9 @@ int main(int argc, char** argv) {
 
   glViewport(0, 0, 800, 600);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+  glfwSetCursorPosCallback(window, mouse_callback);
+
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   Shader ourShader("shaders/basic/shader.vert", "shaders/basic/shader.frag");
 
@@ -214,7 +256,7 @@ int main(int argc, char** argv) {
   glEnable(GL_DEPTH_TEST);
   
   while (!glfwWindowShouldClose(window)) {
-    float currentFrame = glfwGetTime();
+    float currentFrame = (float)glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
     
@@ -242,7 +284,7 @@ int main(int argc, char** argv) {
       glm::mat4 model = glm::mat4(1.0f);
       model = glm::translate(model, cubePositions[i]);
       if (i % 3 == 0) {
-        float angle = glfwGetTime() * glm::radians(50.f);
+        float angle = (float)glfwGetTime() * glm::radians(50.f);
         model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
       } else {
         float angle = 20.f * i;
