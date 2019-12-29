@@ -201,6 +201,8 @@ int main(int argc, char** argv) {
     lastFrame = currentFrame;
     
     process_input(window);
+    lightPos.x = sin(currentFrame) / 1.5f;
+    lightPos.z = cos(currentFrame) / 1.5f;
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
