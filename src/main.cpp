@@ -193,11 +193,6 @@ int main(int argc, char** argv) {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
-  ourShader.use();
-  ourShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-  ourShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-  ourShader.setVec3("lightPos", lightPos);
-  
   glEnable(GL_DEPTH_TEST);
 
   while (!glfwWindowShouldClose(window)) {
@@ -209,21 +204,23 @@ int main(int argc, char** argv) {
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
- 
+
     ourShader.use();
+    ourShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+    ourShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+    ourShader.setVec3("lightPos", lightPos);
+    ourShader.setVec3("viewPos", camera.Position);
 
-    glm::mat4 model(1.0f);
-    model = glm::translate(model, glm::vec3( 0.0f,  0.0f,  0.0f));
-    ourShader.setMat4("model", model);
-    
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
-    ourShader.setMat4("projection", projection);
-
     glm::mat4 view = camera.GetViewMatrix();
+    ourShader.setMat4("projection", projection);
     ourShader.setMat4("view", view);
+    
+    glm::mat4 model(1.0f);
+    ourShader.setMat4("model", model);
+  
 
     glBindVertexArray(VAO);
-
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     lampShader.use();
