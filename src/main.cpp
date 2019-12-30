@@ -219,6 +219,23 @@ int main(int argc, char** argv) {
 
   glEnable(GL_DEPTH_TEST);
 
+  ourShader.use();
+  ourShader.setVec3("light.position", lightPos);
+  ourShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+  ourShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+  ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+  ourShader.setInt("material.diffuse", 0);
+  ourShader.setInt("material.specular", 1);
+  ourShader.setInt("material.emission", 2);
+  ourShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+  ourShader.setFloat("material.shininess", 64.0f);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, diffuseMap);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, specularMap);
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, emissionMap);
+
   while (!glfwWindowShouldClose(window)) {
     float currentFrame = (float)glfwGetTime();
     deltaTime = currentFrame - lastFrame;
@@ -231,10 +248,6 @@ int main(int argc, char** argv) {
 
     ourShader.use();
     ourShader.setVec3("viewPos", camera.Position);
-    ourShader.setVec3("light.position", lightPos);
-    ourShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-    ourShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
-    ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
@@ -242,17 +255,6 @@ int main(int argc, char** argv) {
     ourShader.setMat4("view", view);
 
     glBindVertexArray(VAO);
-    ourShader.setInt("material.diffuse", 0);
-    ourShader.setInt("material.specular", 1);
-    ourShader.setInt("material.emission", 2);
-    ourShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-    ourShader.setFloat("material.shininess", 64.0f);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, diffuseMap);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, specularMap);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, emissionMap);
   
     glm::mat4 model(1.0f);
     ourShader.setMat4("model", model);
@@ -276,6 +278,7 @@ int main(int argc, char** argv) {
   glDeleteBuffers(1, &VBO);
   glDeleteTextures(1, &diffuseMap);
   glDeleteTextures(1, &specularMap);
+  glDeleteTextures(1, &emissionMap);
 
   glfwTerminate();  
   return 0;
