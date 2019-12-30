@@ -30,14 +30,44 @@ float lastX = screenHeight / 2.0f;
 float lastY = screenWidth / 2.0f;
 bool firstMouse = true;
 
-float clampZeroOne(float value) {
-  if (value > 1.0f) {
-    return 1.0f;
-  } else if (value < 0.0f) {
-    return 0.0f;
+unsigned int loadImage(const char *filePath) {
+  int height, width, nChannels;
+  unsigned int texture;
+
+  unsigned char *imageData = stbi_load(filePath, &width, &height, &nChannels, 0);
+  
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+  if (!imageData) {
+    printf("Failed to load image data from path: %s\n", filePath);
+    return 0;
   }
 
-  return value;
+  switch (nChannels) {
+    case 3: {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+      break;
+    }
+    case 4: {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+      break;
+    }
+    default: {
+      printf("Unsupported image channels: %d for image at %s\n", nChannels, filePath);
+      stbi_image_free(imageData);
+      return 0;
+    }
+  }
+
+  glGenerateMipmap(GL_TEXTURE_2D);
+  stbi_image_free(imageData);
+
+  return texture;
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -50,14 +80,6 @@ void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, true);
   }
-
-  if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-    blend += 0.015f * (float)glfwGetTime() / 1000.f;
-  }
-  if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-    blend -= 0.015f * (float)glfwGetTime() / 1000.f;
-  }
-  blend = clampZeroOne(blend);
 
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
     camera.ProcessKeyboard(FORWARD, deltaTime);
@@ -184,58 +206,10 @@ int main(int argc, char** argv) {
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(GL_FLOAT)));
   glEnableVertexAttribArray(2);
 
-  int height, width, nrChannels;
-  unsigned char *data = stbi_load("textures/container2.png", &width, &height, &nrChannels, 0);
-  unsigned int diffuseMap, specularMap, emissionMap;
-  glGenTextures(1, &diffuseMap);
-  glBindTexture(GL_TEXTURE_2D, diffuseMap);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  unsigned int diffuseMap = loadImage("textures/container2.png");
+  unsigned int specularMap = loadImage("textures/container2_specular.png");
+  unsigned int emissionMap = loadImage("textures/matrix.jpg");
 
-  if (data) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-  } else {
-    printf("Failed to load texture\n");
-  }
-  stbi_image_free(data);
-
-  glGenTextures(1, &specularMap);
-  glBindTexture(GL_TEXTURE_2D, specularMap);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  data = stbi_load("textures/container2_specular.png", &width, &height, &nrChannels, 0);
-
-  if (data) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-  } else {
-    printf("Failed to load texture\n");
-  }
-  stbi_image_free(data);
-
-  glGenTextures(1, &emissionMap);
-  glBindTexture(GL_TEXTURE_2D, emissionMap);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  data = stbi_load("textures/matrix.jpg", &width, &height, &nrChannels, 0);
-
-  if (data) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-  } else {
-    printf("Failed to load texture.\n");
-  }
-  stbi_image_free(data);
-  
   unsigned int lightVAO;
   glGenVertexArrays(1, &lightVAO);
   glBindVertexArray(lightVAO);
