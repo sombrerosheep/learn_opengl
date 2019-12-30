@@ -209,7 +209,7 @@ int main(int argc, char** argv) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  data = stbi_load("textures/container2_specular.png", &width, &height, &nrChannels, 0);
+  data = stbi_load("textures/lighting_maps_specular_color.png", &width, &height, &nrChannels, 0);
 
   if (data) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
