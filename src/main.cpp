@@ -241,9 +241,9 @@ int main(int argc, char** argv) {
     ourShader.use();
     ourShader.setVec3("viewPos", camera.Position);
     ourShader.setVec3("light.position", lightPos);
-    ourShader.setVec3("light.ambient", 0.9f, 0.2f, 0.2f);
-    ourShader.setVec3("light.diffuse", 0.1f, 0.1f, 0.7f);
-    ourShader.setVec3("light.specular", 0.2f, 0.8f, 0.2f);
+    ourShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+    ourShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+    ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
