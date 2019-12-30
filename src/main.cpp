@@ -186,9 +186,9 @@ int main(int argc, char** argv) {
 
   int height, width, nrChannels;
   unsigned char *data = stbi_load("textures/container2.png", &width, &height, &nrChannels, 0);
-  unsigned int texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
+  unsigned int diffuseMap, specularMap;
+  glGenTextures(1, &diffuseMap);
+  glBindTexture(GL_TEXTURE_2D, diffuseMap);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -201,6 +201,23 @@ int main(int argc, char** argv) {
     printf("Failed to load texture\n");
   }
   stbi_image_free(data);
+
+  glGenTextures(1, &specularMap);
+  glBindTexture(GL_TEXTURE_2D, specularMap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  data = stbi_load("textures/container2_specular.png", &width, &height, &nrChannels, 0);
+
+  if (data) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+  } else {
+    printf("Failed to load texture\n");
+  }
+  stbi_image_free(data);  
 
   unsigned int lightVAO;
   glGenVertexArrays(1, &lightVAO);
@@ -235,10 +252,13 @@ int main(int argc, char** argv) {
 
     glBindVertexArray(VAO);
     ourShader.setInt("material.diffuse", 0);
+    ourShader.setInt("material.specular", 1);
     ourShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
     ourShader.setFloat("material.shininess", 64.0f);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTexture(GL_TEXTURE_2D, diffuseMap);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, specularMap);
   
     glm::mat4 model(1.0f);
     ourShader.setMat4("model", model);
@@ -260,6 +280,8 @@ int main(int argc, char** argv) {
 
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
+  glDeleteTextures(1, &diffuseMap);
+  glDeleteTextures(1, &specularMap);
 
   glfwTerminate();  
   return 0;
