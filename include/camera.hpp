@@ -7,8 +7,6 @@
 
 #include <vector>
 
-#include <stdio.h>
-
 enum Camera_Movement {
   FORWARD,
   BACKWARD,

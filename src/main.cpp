@@ -232,22 +232,7 @@ int main(int argc, char** argv) {
   glEnable(GL_DEPTH_TEST);
 
   ourShader.use();
-  ourShader.setVec3("light.position", 0.2f, 1.0f, 0.3f);
-  ourShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-  ourShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
-  ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-  ourShader.setFloat("light.constant", 1.0f);
-  ourShader.setFloat("light.linear", 0.09f);
-  ourShader.setFloat("light.quadratic", 0.032f);
-  
-  ourShader.setInt("material.diffuse", 0);
-  ourShader.setInt("material.specular", 1);
-  ourShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-  ourShader.setFloat("material.shininess", 32.0f);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, diffuseMap);
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, specularMap);
+
 
   while (!glfwWindowShouldClose(window)) {
     float currentFrame = (float)glfwGetTime();
@@ -260,7 +245,25 @@ int main(int argc, char** argv) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ourShader.use();
+    ourShader.setVec3("light.position", camera.Position);
+    ourShader.setVec3("light.direction", camera.Front);
+    ourShader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
     ourShader.setVec3("viewPos", camera.Position);
+    ourShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+    ourShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+    ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+    ourShader.setFloat("light.constant", 1.0f);
+    ourShader.setFloat("light.linear", 0.09f);
+    ourShader.setFloat("light.quadratic", 0.032f);
+  
+    ourShader.setInt("material.diffuse", 0);
+    ourShader.setInt("material.specular", 1);
+    ourShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+    ourShader.setFloat("material.shininess", 32.0f);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, diffuseMap);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, specularMap);
 
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
@@ -286,7 +289,7 @@ int main(int argc, char** argv) {
     lampShader.setMat4("view", view);
     lampShader.setMat4("projection", projection);
     glBindVertexArray(lightVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    //    glDrawArrays(GL_TRIANGLES, 0, 36);
 
     glfwSwapBuffers(window);
     glfwPollEvents();
