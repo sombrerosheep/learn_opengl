@@ -53,7 +53,7 @@ if(MSVC)
   set(GLAD_INCLUDE "$ENV{GLAD_SRC}/include")
   set(GLM_INCLUDE "$ENV{GLM_SRC}")
 
-  target_link_libraries(learn-opengl "$ENV{GLFW_SRC}/build/src/Debug/glfw3.lib")
+  target_link_libraries(learn-opengl glfw)
 elseif(UNIX)
 # TODO: ...this
   set(GLFW_INCLUDE "$ENV{GLFW_SRC}/include")
