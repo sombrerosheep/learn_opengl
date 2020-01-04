@@ -14,6 +14,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
 
+#include <mesh.hpp>
+
 const int screenHeight = 600;
 const int screenWidth = 800;
 
