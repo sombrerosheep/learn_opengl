@@ -24,6 +24,9 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory($ENV{GLFW_SRC} "$ENV{GLFW_SRC}/build")
 
+add_subdirectory($ENV{ASSIMP_SRC} "$ENV{ASSIMP_SRC}/build")
+
+
 file(TO_CMAKE_PATH "$ENV{GLAD_SRC}/src/glad.c" GLAD_SRC_C)
 
 ##### Info output #####
