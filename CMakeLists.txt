@@ -26,7 +26,6 @@ add_subdirectory($ENV{GLFW_SRC} "$ENV{GLFW_SRC}/build")
 
 add_subdirectory($ENV{ASSIMP_SRC} "$ENV{ASSIMP_SRC}/build")
 
-
 file(TO_CMAKE_PATH "$ENV{GLAD_SRC}/src/glad.c" GLAD_SRC_C)
 
 ##### Info output #####
@@ -55,15 +54,27 @@ if(MSVC)
   set(GLFW_INCLUDE "$ENV{GLFW_SRC}/include")
   set(GLAD_INCLUDE "$ENV{GLAD_SRC}/include")
   set(GLM_INCLUDE "$ENV{GLM_SRC}")
+  set(ASSIMP_INCLUDE "$ENV{ASSIMP_SRC}/include")
+  set(ASSIMP_BUILD_INCLUDE "$ENV{ASSIMP_SRC}/build/include")
 
-  target_link_libraries(learn-opengl glfw)
+  target_link_libraries(learn-opengl glfw assimp)
 elseif(UNIX)
 # TODO: ...this
   set(GLFW_INCLUDE "$ENV{GLFW_SRC}/include")
   set(GLAD_INCLUDE "$ENV{GLAD_SRC}/include")
   set(GLM_INCLUDE "$ENV{GLM_SRC}")
+  set(ASSIMP_INCLUDE "$ENV{ASSIMP_SRC}/include")
+  set(ASSIMP_BUILD_INCLUDE "$ENV{ASSIMP_SRC}/build/include")
 
   target_link_libraries(learn-opengl glfw3 GL X11 pthread Xrandr Xi dl)
 endif()
 
-target_include_directories(learn-opengl PUBLIC ${learn-opengl_include_dir} ${GLFW_INCLUDE} ${GLAD_INCLUDE} ${GLM_INCLUDE})
+target_include_directories(
+  learn-opengl PUBLIC
+  ${learn-opengl_include_dir}
+  ${GLFW_INCLUDE}
+  ${GLAD_INCLUDE}
+  ${GLM_INCLUDE}
+  ${ASSIMP_INCLUDE}
+  ${ASSIMP_BUILD_INCLUDE}
+)
