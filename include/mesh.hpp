@@ -8,20 +8,19 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/constants.hpp>
 
 using namespace std;
 
 struct Vertex {
   glm::vec3 Position;
-  glm::vec3 Normal;
+  glm::vec3 Normals;
   glm::vec2 TexCoords;
 };
 
 struct Texture {
   unsigned int id;
   string type;
+  string path;
 };
 
 class Mesh {
