@@ -101,12 +101,55 @@ int main(int argc, char** argv) {
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   Shader modelShader("shaders/model/model.vert", "shaders/model/model.frag");
+  Shader lightShader("shaders/lighting/light.vert", "shaders/lighting/light.frag");
 
   Model nanoSuit("models/nanosuit/nanosuit.obj");
 
+  float lightCubeVertices[] = {
+     0.5f,  0.5f,  0.5f, // 0
+    -0.5f,  0.5f,  0.5f, // 1
+    -0.5f, -0.5f,  0.5f, // 2
+     0.5f, -0.5f,  0.5f, // 3
+     0.5f,  0.5f, -0.5f, // 4
+    -0.5f,  0.5f, -0.5f, // 5
+    -0.5f, -0.5f, -0.5f, // 6
+     0.5f, -0.5f, -0.5f  // 7
+  };
+  unsigned int lightCubeIndices[] = {
+    0, 1, 2, 2, 3, 0, // front
+    4, 0, 3, 3, 7, 4, // right
+    4, 7, 6, 6, 5, 4, // back
+    1, 5, 6, 6, 2, 1, // left
+    4, 5, 1, 1, 0, 4, // top
+    3, 2, 6, 6, 7, 3  // bottom
+  };
+  
+  unsigned int lightVAO, lightVBO, lightEBO;
+  glGenVertexArrays(1, &lightVAO);
+  glGenBuffers(1, &lightVBO);
+  glGenBuffers(1, &lightEBO);
+
+  glBindVertexArray(lightVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(lightCubeVertices), lightCubeVertices, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lightEBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(lightCubeIndices), lightCubeIndices, GL_STATIC_DRAW);
+
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+
+  glm::vec3 lightPos[] = {
+    glm::vec3{ 12.0f, 12.0f, 6.0f },
+    glm::vec3{ -12.0f, 12.0f, 6.0f }
+  };
+  glm::vec3 lightColor(1.0f, 1.0f, 0.9f);
   float lightConstant = 1.0f;
   float lightLinear = 0.09f;
   float lightQuadratic = 0.032f;
+
+  lightShader.use();
+  lightShader.setVec3("lightColor", lightColor);
 
   glEnable(GL_DEPTH_TEST);
 
@@ -129,7 +172,19 @@ int main(int argc, char** argv) {
     glm::mat4 model(1.0f);
     modelShader.setMat4("model", model);
 
-    nanoSuit.Draw(modelShader);    
+    nanoSuit.Draw(modelShader);
+
+    lightShader.use();
+    for (int i = 0; i < 2; i++) {
+      glm::mat4 lightModel(1.0f);
+      lightModel = glm::translate(lightModel, lightPos[i]);
+      lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+      lightShader.setMat4("model", lightModel);
+      lightShader.setMat4("projection", projection);
+      lightShader.setMat4("view", view);
+      glBindVertexArray(lightVAO);
+      glDrawElements(GL_TRIANGLES, sizeof(lightCubeIndices), GL_UNSIGNED_INT, 0);
+    }
 
     glfwSwapBuffers(window);
     glfwPollEvents();
