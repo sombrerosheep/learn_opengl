@@ -140,13 +140,13 @@ int main(int argc, char** argv) {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
   glm::vec3 lightPos[] = {
-    glm::vec3{ 12.0f, 12.0f, 6.0f },
-    glm::vec3{ -12.0f, 12.0f, -6.0f }
+    glm::vec3{ 4.0f, 15.0f, 1.0f },
+    glm::vec3{ -4.0f, 2.0f, -4.0f }
   };
   glm::vec3 dLightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
   glm::vec3 lightColor(1.0f, 1.0f, 0.9f);
-  glm::vec3 ambient = glm::vec3(0.1f, 0.1f, 0.1f);
-  glm::vec3 diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+  glm::vec3 ambient = glm::vec3(0.05f, 0.05f, 0.05f);
+  glm::vec3 diffuse = glm::vec3(0.3f, 0.3f, 0.3f);
   glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
   float lightConstant = 1.0f;
   float lightLinear = 0.09f;
@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
     
     process_input(window);
 
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     modelShader.use();
@@ -204,6 +204,9 @@ int main(int argc, char** argv) {
     nanoSuit.Draw(modelShader);
 
     lightShader.use();
+    glBindVertexArray(lightVAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lightEBO);
+    
     for (int i = 0; i < 2; i++) {
       glm::mat4 lightModel(1.0f);
       lightModel = glm::translate(lightModel, lightPos[i]);
@@ -211,7 +214,7 @@ int main(int argc, char** argv) {
       lightShader.setMat4("model", lightModel);
       lightShader.setMat4("projection", projection);
       lightShader.setMat4("view", view);
-      glBindVertexArray(lightVAO);
+      
       glDrawElements(GL_TRIANGLES, sizeof(lightCubeIndices), GL_UNSIGNED_INT, 0);
     }
 
