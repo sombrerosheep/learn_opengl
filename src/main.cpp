@@ -141,16 +141,44 @@ int main(int argc, char** argv) {
 
   glm::vec3 lightPos[] = {
     glm::vec3{ 12.0f, 12.0f, 6.0f },
-    glm::vec3{ -12.0f, 12.0f, 6.0f }
+    glm::vec3{ -12.0f, 12.0f, -6.0f }
   };
+  glm::vec3 dLightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
   glm::vec3 lightColor(1.0f, 1.0f, 0.9f);
+  glm::vec3 ambient = glm::vec3(0.1f, 0.1f, 0.1f);
+  glm::vec3 diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+  glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
   float lightConstant = 1.0f;
   float lightLinear = 0.09f;
   float lightQuadratic = 0.032f;
+  float materialShininess = 32.0f;
 
   lightShader.use();
   lightShader.setVec3("lightColor", lightColor);
 
+  modelShader.use();
+  modelShader.setVec3("pointLights[0].position", lightPos[0]);
+  modelShader.setVec3("pointLights[0].ambient", ambient);
+  modelShader.setVec3("pointLights[0].diffuse", diffuse);
+  modelShader.setVec3("pointLights[0].specular", specular);
+  modelShader.setFloat("pointLights[0].constant", lightConstant);
+  modelShader.setFloat("pointLights[0].linear", lightLinear);
+  modelShader.setFloat("pointLights[0].quadratic", lightQuadratic);
+  
+  modelShader.setVec3("pointLights[1].position", lightPos[1]);
+  modelShader.setVec3("pointLights[1].ambient", ambient);
+  modelShader.setVec3("pointLights[1].diffuse", diffuse);
+  modelShader.setVec3("pointLights[1].specular", specular);
+  modelShader.setFloat("pointLights[1].constant", lightConstant);
+  modelShader.setFloat("pointLights[1].linear", lightLinear);
+  modelShader.setFloat("pointLights[1].quadratic", lightQuadratic);
+  
+  modelShader.setVec3("dLight.direction", dLightDirection);
+  modelShader.setVec3("dLight.ambient", ambient);
+  modelShader.setVec3("dLight.diffuse", diffuse);
+  modelShader.setVec3("dLight.specular", specular);
+  modelShader.setFloat("shininess", materialShininess);
+    
   glEnable(GL_DEPTH_TEST);
 
   while (!glfwWindowShouldClose(window)) {
@@ -171,6 +199,7 @@ int main(int argc, char** argv) {
 
     glm::mat4 model(1.0f);
     modelShader.setMat4("model", model);
+    modelShader.setVec3("viewPos", camera.Position);
 
     nanoSuit.Draw(modelShader);
 
