@@ -50,7 +50,7 @@ vec3 cDirLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
 }
 
 vec3 cPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
-  vec3 lightDir = normalize(-light.position);
+  vec3 lightDir = normalize(light.position);
 
   float diff = max(dot(normal, lightDir), 0.0);
 

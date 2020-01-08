@@ -27,6 +27,49 @@ float lastX = screenHeight / 2.0f;
 float lastY = screenWidth / 2.0f;
 bool firstMouse = true;
 
+GLenum glCheckError_(const char *file, int line) {
+  GLenum errorCode;
+
+  while ((errorCode = glGetError()) != GL_NO_ERROR) {
+    std::string error;
+    switch (errorCode) {
+      case GL_INVALID_ENUM: {
+        error = "INVALID_ENUM";
+        break;
+      }
+      case GL_INVALID_VALUE: {
+        error = "INVALID_VALUE";
+        break;
+      }
+      case GL_INVALID_OPERATION: {
+        error = "INVALID_OPERATION";
+        break;
+      }
+      case GL_STACK_OVERFLOW: {
+        error = "STACK_OVERFLOW";
+        break;
+      }
+      case GL_STACK_UNDERFLOW: {
+        error = "STACK_UNDERFLOW";
+        break;
+      }
+      case GL_OUT_OF_MEMORY: {
+        error = "OUT_OF_MEMORY";
+        break;
+      }
+      case GL_INVALID_FRAMEBUFFER_OPERATION: {
+        error = "INVALID_FRAMEBUFFER_OPERATION";
+        break;
+      }
+    }
+
+    printf("%s | %s | %d\n", error.c_str(), file, line);
+  }
+
+  return errorCode;
+}
+#define glCheckError() glCheckError_(__FILE__, __LINE__)
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
   glViewport(0, 0, width, height);
 }
@@ -140,15 +183,18 @@ int main(int argc, char** argv) {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
 
   glm::vec3 lightPos[] = {
-    glm::vec3{ 4.0f, 15.0f, 1.0f },
-    glm::vec3{ -4.0f, 2.0f, -4.0f }
+    glm::vec3{ 3.0f, 8.5f, 1.0f },
+    glm::vec3{ -1.5f, 14.5f, 0.5f }
   };
-  glm::vec3 dLightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
+  glm::vec3 dLightDirection = glm::vec3(-0.2f, -0.3f, 1.0f);
   glm::vec3 lightColor(1.0f, 1.0f, 0.9f);
   glm::vec3 ambient = glm::vec3(0.05f, 0.05f, 0.05f);
-  glm::vec3 diffuse = glm::vec3(0.3f, 0.3f, 0.3f);
-  glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
-  float lightConstant = 1.0f;
+  glm::vec3 diffuse = glm::vec3(0.1f, 0.1f, 0.1f);
+  glm::vec3 specular = glm::vec3(0.6f, 0.6f, 0.6f);
+  glm::vec3 lightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
+  glm::vec3 lightDiffuse = glm::vec3(0.5f, 0.2f, 0.2f);
+  glm::vec3 lightSpecular = glm::vec3(1.0f, 0.5f, 0.5f);
+  float lightConstant = 0.7f;
   float lightLinear = 0.09f;
   float lightQuadratic = 0.032f;
   float materialShininess = 32.0f;
@@ -157,18 +203,16 @@ int main(int argc, char** argv) {
   lightShader.setVec3("lightColor", lightColor);
 
   modelShader.use();
-  modelShader.setVec3("pointLights[0].position", lightPos[0]);
-  modelShader.setVec3("pointLights[0].ambient", ambient);
-  modelShader.setVec3("pointLights[0].diffuse", diffuse);
-  modelShader.setVec3("pointLights[0].specular", specular);
+  modelShader.setVec3("pointLights[0].ambient", lightAmbient);
+  modelShader.setVec3("pointLights[0].diffuse", lightDiffuse);
+  modelShader.setVec3("pointLights[0].specular", lightSpecular);
   modelShader.setFloat("pointLights[0].constant", lightConstant);
   modelShader.setFloat("pointLights[0].linear", lightLinear);
   modelShader.setFloat("pointLights[0].quadratic", lightQuadratic);
   
-  modelShader.setVec3("pointLights[1].position", lightPos[1]);
-  modelShader.setVec3("pointLights[1].ambient", ambient);
-  modelShader.setVec3("pointLights[1].diffuse", diffuse);
-  modelShader.setVec3("pointLights[1].specular", specular);
+  modelShader.setVec3("pointLights[1].ambient", lightAmbient);
+  modelShader.setVec3("pointLights[1].diffuse", lightDiffuse);
+  modelShader.setVec3("pointLights[1].specular", lightSpecular);
   modelShader.setFloat("pointLights[1].constant", lightConstant);
   modelShader.setFloat("pointLights[1].linear", lightLinear);
   modelShader.setFloat("pointLights[1].quadratic", lightQuadratic);
@@ -188,40 +232,47 @@ int main(int argc, char** argv) {
     
     process_input(window);
 
-    glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    modelShader.use();
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
-    modelShader.setMat4("projection", projection);
-    modelShader.setMat4("view", view);
-
     glm::mat4 model(1.0f);
-    modelShader.setMat4("model", model);
-    modelShader.setVec3("viewPos", camera.Position);
-
-    nanoSuit.Draw(modelShader);
-
+    
     lightShader.use();
     glBindVertexArray(lightVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lightEBO);
-    
-    for (int i = 0; i < 2; i++) {
-      glm::mat4 lightModel(1.0f);
-      lightModel = glm::translate(lightModel, lightPos[i]);
-      lightModel = glm::scale(lightModel, glm::vec3(0.2f));
-      lightShader.setMat4("model", lightModel);
-      lightShader.setMat4("projection", projection);
-      lightShader.setMat4("view", view);
-      
-      glDrawElements(GL_TRIANGLES, sizeof(lightCubeIndices), GL_UNSIGNED_INT, 0);
-    }
+    lightShader.setMat4("projection", projection);
+    lightShader.setMat4("view", view);
+
+    glm::mat4 lightModelA(1.0f);
+    lightModelA = glm::rotate(lightModelA, currentFrame / 1.8f, glm::vec3(0.0f, 1.0f, 0.0f));
+    lightModelA = glm::translate(lightModelA, lightPos[0]);
+    lightModelA = glm::scale(lightModelA, glm::vec3(0.2f));
+    lightShader.setMat4("model", lightModelA);
+    glDrawElements(GL_TRIANGLES, sizeof(lightCubeIndices), GL_UNSIGNED_INT, 0);
+
+    glm::mat4 lightModelB(1.0f);
+    lightModelB = glm::rotate(lightModelB, currentFrame / 2.2f, glm::vec3(0.0f, 1.0f, 0.0f));
+    lightModelB = glm::translate(lightModelB, lightPos[1]);
+    lightModelB = glm::scale(lightModelB, glm::vec3(0.2f));
+    lightShader.setMat4("model", lightModelB);
+    glDrawElements(GL_TRIANGLES, sizeof(lightCubeIndices), GL_UNSIGNED_INT, 0);
+
+    modelShader.use();
+    modelShader.setMat4("projection", projection);
+    modelShader.setMat4("view", view);
+    modelShader.setMat4("model", model);
+    modelShader.setVec3("viewPos", camera.Position);
+    modelShader.setVec3("pointLights[0].position", glm::vec3(lightModelA * glm::vec4(lightPos[0], 1.0f)));
+    modelShader.setVec3("pointLights[1].position", glm::vec3(lightModelB * glm::vec4(lightPos[1], 1.0f)));
+    nanoSuit.Draw(modelShader);
 
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
 
+  glCheckError();
   glfwTerminate();  
   return 0;
 }
