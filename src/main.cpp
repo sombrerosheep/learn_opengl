@@ -12,7 +12,6 @@
 #include <glm/gtc/constants.hpp>
 
 #include <model.hpp>
-
 #include <stb_image.h>
 
 const int screenHeight = 720;
@@ -26,6 +25,50 @@ Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = screenHeight / 2.0f;
 float lastY = screenWidth / 2.0f;
 bool firstMouse = true;
+
+unsigned int load_image(const char *path) {
+  int height, width, nChannels;
+  unsigned int texture;
+
+  unsigned char *imageData = stbi_load(path, &width, &height, &nChannels, 0);
+  
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+  if (!imageData) {
+    printf("Failed to load image data from path: %s\n", path);
+    return 0;
+  }
+
+  switch (nChannels) {
+    case 1: {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, imageData);
+      break;
+    }
+    case 3: {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+      break;
+    }
+    case 4: {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+      break;
+    }
+    default: {
+      printf("Unsupported image channels: %d for image at %s\n", nChannels, path);
+      stbi_image_free(imageData);
+      return 0;
+    }
+  }
+
+  glGenerateMipmap(GL_TEXTURE_2D);
+  stbi_image_free(imageData);
+
+  return texture;
+}
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -93,14 +136,14 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  glViewport(0, 0, 800, 600);
+  glViewport(0, 0, screenWidth, screenHeight);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-  Shader shader("shaders/texture/basic.vert", "shaders/texture/basic.frag");  
+  Shader textureShader("shaders/texture/basic.vert", "shaders/texture/basic.frag");  
   Shader lightShader("shaders/lighting/light.vert", "shaders/lighting/light.frag");
 
   float cubeVertexData[] = {
@@ -131,6 +174,9 @@ int main(int argc, char** argv) {
     3, 2, 6, 6, 7, 3  // bottom
   };
 
+  unsigned int texture_marble = load_image("./textures/marble.jpg");
+  unsigned int texture_metal = load_image("./textures/metal.png");
+
   unsigned int floorVAO, floorVBO, floorEBO;
   glGenVertexArrays(1, &floorVAO);
   glGenBuffers(1, &floorVBO);
@@ -148,7 +194,7 @@ int main(int argc, char** argv) {
 
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void*)(sizeof(GL_FLOAT) * 3));
-  
+
   unsigned int lightVAO, lightVBO, lightEBO;
   glGenVertexArrays(1, &lightVAO);
   glGenBuffers(1, &lightVBO);
@@ -200,12 +246,16 @@ int main(int argc, char** argv) {
     glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 model(1.0f);
 
-    shader.use();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture_metal);
+
+    textureShader.use();
     glBindVertexArray(floorVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
-    shader.setMat4("projection", projection);
-    shader.setMat4("view", view);
-    shader.setMat4("model", model);
+    textureShader.setInt("tex", 0);
+    textureShader.setMat4("projection", projection);
+    textureShader.setMat4("view", view);
+    textureShader.setMat4("model", model);
     glDrawElements(GL_TRIANGLES, sizeof(planeIndices), GL_UNSIGNED_INT, 0);
     
     lightShader.use();
