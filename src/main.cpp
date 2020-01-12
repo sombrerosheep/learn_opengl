@@ -13,62 +13,17 @@
 
 #include <model.hpp>
 
-const int screenHeight = 600;
-const int screenWidth = 800;
-
-float blend = 0.2f;
+const int screenHeight = 720;
+const int screenWidth = 1280;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-Camera camera(glm::vec3(3.0f, 17.0f, 11.0f), glm::vec3(0.0f, 1.0f, 0.0f), -100.0f, -20.0f);
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 float lastX = screenHeight / 2.0f;
 float lastY = screenWidth / 2.0f;
 bool firstMouse = true;
-
-GLenum glCheckError_(const char *file, int line) {
-  GLenum errorCode;
-
-  while ((errorCode = glGetError()) != GL_NO_ERROR) {
-    std::string error;
-    switch (errorCode) {
-      case GL_INVALID_ENUM: {
-        error = "INVALID_ENUM";
-        break;
-      }
-      case GL_INVALID_VALUE: {
-        error = "INVALID_VALUE";
-        break;
-      }
-      case GL_INVALID_OPERATION: {
-        error = "INVALID_OPERATION";
-        break;
-      }
-      case GL_STACK_OVERFLOW: {
-        error = "STACK_OVERFLOW";
-        break;
-      }
-      case GL_STACK_UNDERFLOW: {
-        error = "STACK_UNDERFLOW";
-        break;
-      }
-      case GL_OUT_OF_MEMORY: {
-        error = "OUT_OF_MEMORY";
-        break;
-      }
-      case GL_INVALID_FRAMEBUFFER_OPERATION: {
-        error = "INVALID_FRAMEBUFFER_OPERATION";
-        break;
-      }
-    }
-
-    printf("%s | %s | %d\n", error.c_str(), file, line);
-  }
-
-  return errorCode;
-}
-#define glCheckError() glCheckError_(__FILE__, __LINE__)
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -143,20 +98,27 @@ int main(int argc, char** argv) {
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-  Shader modelShader("shaders/model/model.vert", "shaders/model/model.frag");
+  Shader shader("shaders/texture/basic.vert", "shaders/texture/basic.frag");  
   Shader lightShader("shaders/lighting/light.vert", "shaders/lighting/light.frag");
 
-  Model nanoSuit("models/nanosuit/nanosuit.obj");
-
-  float lightCubeVertices[] = {
-     0.5f,  0.5f,  0.5f, // 0
-    -0.5f,  0.5f,  0.5f, // 1
-    -0.5f, -0.5f,  0.5f, // 2
-     0.5f, -0.5f,  0.5f, // 3
-     0.5f,  0.5f, -0.5f, // 4
-    -0.5f,  0.5f, -0.5f, // 5
-    -0.5f, -0.5f, -0.5f, // 6
-     0.5f, -0.5f, -0.5f  // 7
+  float cubeVertexData[] = {
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, // 0
+    -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, // 1
+    -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // 2
+     0.5f, -0.5f,  0.5f, 1.0f, 0.0f, // 3
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // 4
+    -0.5f,  0.5f, -0.5f, 0.0f, 1.0f, // 5
+    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // 6p
+     0.5f, -0.5f, -0.5f, 1.0f, 0.0f  // 7
+  };
+  float planeVertexData[] = {
+     5.0f, -0.5f,  5.0f, 2.0f, 0.0f,
+    -5.0f, -0.5f,  5.0f, 0.0f, 0.0,
+    -5.0f, -0.5f, -5.0f, 0.0f, 2.0f,
+     5.0f, -0.5f, -5.0f, 2.0f, 2.0f
+  };
+  unsigned int planeIndices[] = {
+    0, 1, 2, 2, 3, 0
   };
   unsigned int lightCubeIndices[] = {
     0, 1, 2, 2, 3, 0, // front
@@ -166,6 +128,24 @@ int main(int argc, char** argv) {
     4, 5, 1, 1, 0, 4, // top
     3, 2, 6, 6, 7, 3  // bottom
   };
+
+  unsigned int floorVAO, floorVBO, floorEBO;
+  glGenVertexArrays(1, &floorVAO);
+  glGenBuffers(1, &floorVBO);
+  glGenBuffers(1, &floorEBO);
+
+  glBindVertexArray(floorVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertexData), planeVertexData, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), planeIndices, GL_STATIC_DRAW);
+
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void*)0);
+
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void*)(sizeof(GL_FLOAT) * 3));
   
   unsigned int lightVAO, lightVBO, lightEBO;
   glGenVertexArrays(1, &lightVAO);
@@ -174,13 +154,13 @@ int main(int argc, char** argv) {
 
   glBindVertexArray(lightVAO);
   glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(lightCubeVertices), lightCubeVertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertexData), cubeVertexData, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lightEBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(lightCubeIndices), lightCubeIndices, GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void*)0);
 
   glm::vec3 lightPos[] = {
     glm::vec3{ 3.0f, 8.5f, 1.0f },
@@ -202,27 +182,6 @@ int main(int argc, char** argv) {
   lightShader.use();
   lightShader.setVec3("lightColor", lightColor);
 
-  modelShader.use();
-  modelShader.setVec3("pointLights[0].ambient", lightAmbient);
-  modelShader.setVec3("pointLights[0].diffuse", lightDiffuse);
-  modelShader.setVec3("pointLights[0].specular", lightSpecular);
-  modelShader.setFloat("pointLights[0].constant", lightConstant);
-  modelShader.setFloat("pointLights[0].linear", lightLinear);
-  modelShader.setFloat("pointLights[0].quadratic", lightQuadratic);
-  
-  modelShader.setVec3("pointLights[1].ambient", lightAmbient);
-  modelShader.setVec3("pointLights[1].diffuse", lightDiffuse);
-  modelShader.setVec3("pointLights[1].specular", lightSpecular);
-  modelShader.setFloat("pointLights[1].constant", lightConstant);
-  modelShader.setFloat("pointLights[1].linear", lightLinear);
-  modelShader.setFloat("pointLights[1].quadratic", lightQuadratic);
-  
-  modelShader.setVec3("dLight.direction", dLightDirection);
-  modelShader.setVec3("dLight.ambient", ambient);
-  modelShader.setVec3("dLight.diffuse", diffuse);
-  modelShader.setVec3("dLight.specular", specular);
-  modelShader.setFloat("shininess", materialShininess);
-    
   glEnable(GL_DEPTH_TEST);
 
   while (!glfwWindowShouldClose(window)) {
@@ -232,12 +191,20 @@ int main(int argc, char** argv) {
     
     process_input(window);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 model(1.0f);
+
+    shader.use();
+    glBindVertexArray(floorVAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+    shader.setMat4("projection", projection);
+    shader.setMat4("view", view);
+    shader.setMat4("model", model);
+    glDrawElements(GL_TRIANGLES, sizeof(planeIndices), GL_UNSIGNED_INT, 0);
     
     lightShader.use();
     glBindVertexArray(lightVAO);
@@ -259,20 +226,10 @@ int main(int argc, char** argv) {
     lightShader.setMat4("model", lightModelB);
     glDrawElements(GL_TRIANGLES, sizeof(lightCubeIndices), GL_UNSIGNED_INT, 0);
 
-    modelShader.use();
-    modelShader.setMat4("projection", projection);
-    modelShader.setMat4("view", view);
-    modelShader.setMat4("model", model);
-    modelShader.setVec3("viewPos", camera.Position);
-    modelShader.setVec3("pointLights[0].position", glm::vec3(lightModelA * glm::vec4(lightPos[0], 1.0f)));
-    modelShader.setVec3("pointLights[1].position", glm::vec3(lightModelB * glm::vec4(lightPos[1], 1.0f)));
-    nanoSuit.Draw(modelShader);
-
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
 
-  glCheckError();
   glfwTerminate();  
   return 0;
 }
