@@ -163,10 +163,10 @@ int main(int argc, char** argv) {
     glm::vec3(2.0f, 0.0f, 0.0f)
   };
   float planeVertexData[] = {
-     5.0f, -0.5f,  5.0f, 2.0f, 0.0f,
-    -5.0f, -0.5f,  5.0f, 0.0f, 0.0,
-    -5.0f, -0.5f, -5.0f, 0.0f, 2.0f,
-     5.0f, -0.5f, -5.0f, 2.0f, 2.0f
+     5.0f, -0.51f,  5.0f, 2.0f, 0.0f,
+    -5.0f, -0.51f,  5.0f, 0.0f, 0.0,
+    -5.0f, -0.51f, -5.0f, 0.0f, 2.0f,
+     5.0f, -0.51f, -5.0f, 2.0f, 2.0f
   };
   unsigned int planeIndices[] = {
     0, 1, 2, 2, 3, 0
