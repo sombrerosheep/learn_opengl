@@ -144,6 +144,7 @@ int main(int argc, char** argv) {
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_ALWAYS);
 
   Shader textureShader("shaders/texture/basic.vert", "shaders/texture/basic.frag");  
   Shader lightShader("shaders/lighting/light.vert", "shaders/lighting/light.frag");
@@ -235,16 +236,8 @@ int main(int argc, char** argv) {
     glm::mat4 model(1.0f);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture_metal);
 
     textureShader.use();
-    glBindVertexArray(floorVAO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
-    textureShader.setInt("tex", 0);
-    textureShader.setMat4("projection", projection);
-    textureShader.setMat4("view", view);
-    textureShader.setMat4("model", model);
-    glDrawElements(GL_TRIANGLES, sizeof(planeIndices), GL_UNSIGNED_INT, 0);
 
     glBindVertexArray(cubeVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
@@ -255,6 +248,15 @@ int main(int argc, char** argv) {
       textureShader.setMat4("model", model);
       glDrawElements(GL_TRIANGLES, sizeof(cubeIndices), GL_UNSIGNED_INT, 0);
     }
+
+    glBindVertexArray(floorVAO);
+    glBindTexture(GL_TEXTURE_2D, texture_metal);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+    textureShader.setInt("tex", 0);
+    textureShader.setMat4("projection", projection);
+    textureShader.setMat4("view", view);
+    textureShader.setMat4("model", model);
+    glDrawElements(GL_TRIANGLES, sizeof(planeIndices), GL_UNSIGNED_INT, 0);
 
     glfwSwapBuffers(window);
     glfwPollEvents();
