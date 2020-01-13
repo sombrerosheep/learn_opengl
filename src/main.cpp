@@ -144,10 +144,9 @@ int main(int argc, char** argv) {
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_ALWAYS);
 
-  Shader textureShader("shaders/texture/basic.vert", "shaders/texture/basic.frag");  
-  Shader lightShader("shaders/lighting/light.vert", "shaders/lighting/light.frag");
+  Shader textureShader("shaders/texture/basic.vert", "shaders/texture/basic.frag");
+  Shader depthShader("shaders/texture/basic.vert", "shaders/texture/depth.frag");
 
   float cubeVertexData[] = {
      0.5f,  0.5f,  0.5f, 1.0f, 1.0f, // 0
@@ -202,7 +201,6 @@ int main(int argc, char** argv) {
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void*)(sizeof(GL_FLOAT) * 3));
 
-
   unsigned int cubeVAO, cubeVBO, cubeEBO;
   glGenVertexArrays(1, &cubeVAO);
   glGenBuffers(1, &cubeVBO);
@@ -237,18 +235,22 @@ int main(int argc, char** argv) {
 
     glActiveTexture(GL_TEXTURE0);
 
-    textureShader.use();
+    depthShader.use();
 
     glBindVertexArray(cubeVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
     glBindTexture(GL_TEXTURE_2D, texture_marble);
+    depthShader.setInt("tex", 0);
+    depthShader.setMat4("projection", projection);
+    depthShader.setMat4("view", view);
     for (int i = 0; i < 2; i++) {
       model = glm::mat4(1.0f);
       model = glm::translate(model, cubePositions[i]);
-      textureShader.setMat4("model", model);
+      depthShader.setMat4("model", model);
       glDrawElements(GL_TRIANGLES, sizeof(cubeIndices), GL_UNSIGNED_INT, 0);
     }
 
+    textureShader.use();
     glBindVertexArray(floorVAO);
     glBindTexture(GL_TEXTURE_2D, texture_metal);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
