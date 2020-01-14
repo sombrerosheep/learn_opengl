@@ -144,10 +144,12 @@ int main(int argc, char** argv) {
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_STENCIL_TEST);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
   Shader textureShader("shaders/texture/basic.vert", "shaders/texture/basic.frag");
-  Shader depthShader("shaders/texture/basic.vert", "shaders/texture/depth.frag");
-
+  Shader stencilShader("shaders/texture/basic.vert", "shaders/texture/stencil.frag");
+ 
   float cubeVertexData[] = {
      0.5f,  0.5f,  0.5f, 1.0f, 1.0f, // 0
     -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, // 1
@@ -226,8 +228,10 @@ int main(int argc, char** argv) {
     
     process_input(window);
 
+    glEnable(GL_DEPTH_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
@@ -235,21 +239,7 @@ int main(int argc, char** argv) {
 
     glActiveTexture(GL_TEXTURE0);
 
-    depthShader.use();
-
-    glBindVertexArray(cubeVAO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
-    glBindTexture(GL_TEXTURE_2D, texture_marble);
-    depthShader.setInt("tex", 0);
-    depthShader.setMat4("projection", projection);
-    depthShader.setMat4("view", view);
-    for (int i = 0; i < 2; i++) {
-      model = glm::mat4(1.0f);
-      model = glm::translate(model, cubePositions[i]);
-      depthShader.setMat4("model", model);
-      glDrawElements(GL_TRIANGLES, sizeof(cubeIndices), GL_UNSIGNED_INT, 0);
-    }
-
+    glStencilMask(0x00);
     textureShader.use();
     glBindVertexArray(floorVAO);
     glBindTexture(GL_TEXTURE_2D, texture_metal);
@@ -259,6 +249,39 @@ int main(int argc, char** argv) {
     textureShader.setMat4("view", view);
     textureShader.setMat4("model", model);
     glDrawElements(GL_TRIANGLES, sizeof(planeIndices), GL_UNSIGNED_INT, 0);
+
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glStencilMask(0xFF);
+    glBindVertexArray(cubeVAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
+    glBindTexture(GL_TEXTURE_2D, texture_marble);
+    textureShader.setInt("tex", 0);
+    textureShader.setMat4("projection", projection);
+    textureShader.setMat4("view", view);
+    for (int i = 0; i < 2; i++) {
+      model = glm::mat4(1.0f);
+      model = glm::translate(model, cubePositions[i]);
+      textureShader.setMat4("model", model);
+      glDrawElements(GL_TRIANGLES, sizeof(cubeIndices), GL_UNSIGNED_INT, 0);
+    }
+
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilMask(0x00);
+    glDisable(GL_DEPTH_TEST);
+    stencilShader.use();
+    
+    for (int i = 0; i < 2; i++) {
+      model = glm::mat4(1.0f);
+      model = glm::translate(model, cubePositions[i]);
+      model = glm::scale(model, glm::vec3(1.05f));
+      stencilShader.setMat4("projection", projection);
+      stencilShader.setMat4("view", view);
+      stencilShader.setMat4("model", model);
+      glDrawElements(GL_TRIANGLES, sizeof(cubeIndices), GL_UNSIGNED_INT, 0);
+    }
+
+    glStencilMask(0xFF);
+    glEnable(GL_DEPTH_TEST);
 
     glfwSwapBuffers(window);
     glfwPollEvents();
