@@ -28,16 +28,12 @@ bool firstMouse = true;
 
 unsigned int load_image(const char *path) {
   int height, width, nChannels;
-  unsigned int texture;
+  unsigned int texture, format;
 
   unsigned char *imageData = stbi_load(path, &width, &height, &nChannels, 0);
   
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
   if (!imageData) {
     printf("Failed to load image data from path: %s\n", path);
@@ -46,15 +42,15 @@ unsigned int load_image(const char *path) {
 
   switch (nChannels) {
     case 1: {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, imageData);
+      format = GL_RED;
       break;
     }
     case 3: {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+      format = GL_RGB;
       break;
     }
     case 4: {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+      format = GL_RGBA;
       break;
     }
     default: {
@@ -63,6 +59,13 @@ unsigned int load_image(const char *path) {
       return 0;
     }
   }
+
+  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   glGenerateMipmap(GL_TEXTURE_2D);
   stbi_image_free(imageData);
