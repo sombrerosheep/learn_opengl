@@ -144,11 +144,8 @@ int main(int argc, char** argv) {
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_STENCIL_TEST);
-  glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
   Shader textureShader("shaders/texture/basic.vert", "shaders/texture/basic.frag");
-  Shader stencilShader("shaders/texture/basic.vert", "shaders/texture/stencil.frag");
  
   float cubeVertexData[] = {
      0.5f,  0.5f,  0.5f, 1.0f, 1.0f, // 0
@@ -181,11 +178,29 @@ int main(int argc, char** argv) {
     4, 5, 1, 1, 0, 4, // top
     3, 2, 6, 6, 7, 3  // bottom
   };
+  unsigned int num_grass = 5;
+  float vegetation_verts[] = {
+    -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+     0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+     0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+    -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
+    -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+  };
+  glm::vec3 vegetation[] = {
+    glm::vec3(-1.0f, 0.0f, -0.48f),
+    glm::vec3( 2.0f, 0.0f,  0.51f),
+    glm::vec3( 0.0f, 0.0f,  0.7f),
+    glm::vec3(-0.3f, 0.0f, -2.3f),
+    glm::vec3( 0.5f, 0.0f, -0.6f)
+  };
 
   unsigned int texture_marble = load_image("./textures/marble.jpg");
   unsigned int texture_metal = load_image("./textures/metal.png");
+  unsigned int texture_grass = load_image("./textures/grass.png");
 
   unsigned int floorVAO, floorVBO, floorEBO;
+
   glGenVertexArrays(1, &floorVAO);
   glGenBuffers(1, &floorVBO);
   glGenBuffers(1, &floorEBO);
@@ -196,6 +211,20 @@ int main(int argc, char** argv) {
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), planeIndices, GL_STATIC_DRAW);
+
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void*)0);
+
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void*)(sizeof(GL_FLOAT) * 3));
+
+  unsigned int grassVAO, grassVBO;
+  glGenVertexArrays(1, &grassVAO);
+  glGenBuffers(1, &grassVBO);
+
+  glBindVertexArray(grassVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vegetation_verts), vegetation_verts, GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void*)0);
@@ -229,9 +258,8 @@ int main(int argc, char** argv) {
     process_input(window);
 
     glEnable(GL_DEPTH_TEST);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
@@ -239,7 +267,6 @@ int main(int argc, char** argv) {
 
     glActiveTexture(GL_TEXTURE0);
 
-    glStencilMask(0x00);
     textureShader.use();
     glBindVertexArray(floorVAO);
     glBindTexture(GL_TEXTURE_2D, texture_metal);
@@ -250,8 +277,6 @@ int main(int argc, char** argv) {
     textureShader.setMat4("model", model);
     glDrawElements(GL_TRIANGLES, sizeof(planeIndices), GL_UNSIGNED_INT, 0);
 
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilMask(0xFF);
     glBindVertexArray(cubeVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
     glBindTexture(GL_TEXTURE_2D, texture_marble);
@@ -265,23 +290,18 @@ int main(int argc, char** argv) {
       glDrawElements(GL_TRIANGLES, sizeof(cubeIndices), GL_UNSIGNED_INT, 0);
     }
 
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilMask(0x00);
-    glDisable(GL_DEPTH_TEST);
-    stencilShader.use();
-    
-    for (int i = 0; i < 2; i++) {
+    glBindVertexArray(grassVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
+    glBindTexture(GL_TEXTURE_2D, texture_grass);
+    textureShader.setInt("tex", 0);
+    textureShader.setMat4("projection", projection);
+    textureShader.setMat4("view", view);
+    for (unsigned int i = 0; i < num_grass; i++) {
       model = glm::mat4(1.0f);
-      model = glm::translate(model, cubePositions[i]);
-      model = glm::scale(model, glm::vec3(1.05f));
-      stencilShader.setMat4("projection", projection);
-      stencilShader.setMat4("view", view);
-      stencilShader.setMat4("model", model);
-      glDrawElements(GL_TRIANGLES, sizeof(cubeIndices), GL_UNSIGNED_INT, 0);
+      model = glm::translate(model, vegetation[i]);
+      textureShader.setMat4("model", model);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
     }
-
-    glStencilMask(0xFF);
-    glEnable(GL_DEPTH_TEST);
 
     glfwSwapBuffers(window);
     glfwPollEvents();
