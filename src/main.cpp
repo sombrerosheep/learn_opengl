@@ -150,19 +150,21 @@ int main(int argc, char** argv) {
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
+  glCullFace(GL_FRONT);
+  glFrontFace(GL_CCW);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   Shader textureShader("shaders/texture/basic.vert", "shaders/texture/basic.frag");
  
   float cubeVertexData[] = {
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, // 0
-    -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, // 1
-    -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // 2
-     0.5f, -0.5f,  0.5f, 1.0f, 0.0f, // 3
-     0.5f,  0.5f, -0.5f, 0.0f, 0.0f, // 4
-    -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, // 5
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, // 6
-     0.5f, -0.5f, -0.5f, 0.0f, 1.0f  // 7
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // 0
+    -0.5f,  0.5f, -0.5f, 0.0f, 1.0f, // 1
+    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // 2
+     0.5f, -0.5f, -0.5f, 1.0f, 0.0f, // 3
+     0.5f,  0.5f,  0.5f, 0.0f, 0.0f, // 4
+    -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // 5
+    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, // 6
+     0.5f, -0.5f,  0.5f, 0.0f, 1.0f  // 7
   };
   glm::vec3 cubePositions[] = {
     glm::vec3(-1.0f, 0.0f, -1.0f),
@@ -264,9 +266,10 @@ int main(int argc, char** argv) {
     
     process_input(window);
 
-    glEnable(GL_DEPTH_TEST);
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_CULL_FACE);
 
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
@@ -297,6 +300,7 @@ int main(int argc, char** argv) {
       glDrawElements(GL_TRIANGLES, sizeof(cubeIndices), GL_UNSIGNED_INT, 0);
     }
 
+    glDisable(GL_CULL_FACE);
     glBindVertexArray(windowVAO);
     glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
     glBindTexture(GL_TEXTURE_2D, texture_window);
@@ -308,7 +312,7 @@ int main(int argc, char** argv) {
       float distance = glm::length(camera.Position - windows[i]);
       sorted[distance] = windows[i];
     }
-    
+
     for (std::map<float,glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it) {
       model = glm::mat4(1.0f);
       model = glm::translate(model, it->second);
