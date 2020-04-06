@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <cmath>
+#include <map>
+
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -147,6 +149,8 @@ int main(int argc, char** argv) {
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   Shader textureShader("shaders/texture/basic.vert", "shaders/texture/basic.frag");
  
@@ -181,8 +185,8 @@ int main(int argc, char** argv) {
     4, 5, 1, 1, 0, 4, // top
     3, 2, 6, 6, 7, 3  // bottom
   };
-  unsigned int num_grass = 5;
-  float vegetation_verts[] = {
+  unsigned int num_windows = 5;
+  float window_verts[] = {
     -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
      0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
      0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
@@ -190,7 +194,7 @@ int main(int argc, char** argv) {
     -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
     -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
   };
-  glm::vec3 vegetation[] = {
+  glm::vec3 windows[] = {
     glm::vec3(-1.0f, 0.0f, -0.48f),
     glm::vec3( 2.0f, 0.0f,  0.51f),
     glm::vec3( 0.0f, 0.0f,  0.7f),
@@ -200,8 +204,8 @@ int main(int argc, char** argv) {
 
   unsigned int texture_marble = load_image("./textures/marble.jpg");
   unsigned int texture_metal = load_image("./textures/metal.png");
-  unsigned int texture_grass = load_image("./textures/grass.png");
-
+  unsigned int texture_window = load_image("./textures/blending_transparent_window.png");
+  
   unsigned int floorVAO, floorVBO, floorEBO;
 
   glGenVertexArrays(1, &floorVAO);
@@ -221,13 +225,13 @@ int main(int argc, char** argv) {
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void*)(sizeof(GL_FLOAT) * 3));
 
-  unsigned int grassVAO, grassVBO;
-  glGenVertexArrays(1, &grassVAO);
-  glGenBuffers(1, &grassVBO);
+  unsigned int windowVAO, windowVBO;
+  glGenVertexArrays(1, &windowVAO);
+  glGenBuffers(1, &windowVBO);
 
-  glBindVertexArray(grassVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vegetation_verts), vegetation_verts, GL_STATIC_DRAW);
+  glBindVertexArray(windowVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(window_verts), window_verts, GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void*)0);
@@ -293,15 +297,21 @@ int main(int argc, char** argv) {
       glDrawElements(GL_TRIANGLES, sizeof(cubeIndices), GL_UNSIGNED_INT, 0);
     }
 
-    glBindVertexArray(grassVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
-    glBindTexture(GL_TEXTURE_2D, texture_grass);
+    glBindVertexArray(windowVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
+    glBindTexture(GL_TEXTURE_2D, texture_window);
     textureShader.setInt("tex", 0);
     textureShader.setMat4("projection", projection);
     textureShader.setMat4("view", view);
-    for (unsigned int i = 0; i < num_grass; i++) {
+    std::map<float, glm::vec3> sorted;
+    for (unsigned int i = 0; i < num_windows; i++) {
+      float distance = glm::length(camera.Position - windows[i]);
+      sorted[distance] = windows[i];
+    }
+    
+    for (std::map<float,glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it) {
       model = glm::mat4(1.0f);
-      model = glm::translate(model, vegetation[i]);
+      model = glm::translate(model, it->second);
       textureShader.setMat4("model", model);
       glDrawArrays(GL_TRIANGLES, 0, 6);
     }
