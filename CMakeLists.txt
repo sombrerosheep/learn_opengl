@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 
-project(learn-opengl CXX)
+project(learn-opengl C CXX)
 
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 0)
@@ -24,9 +24,21 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory($ENV{GLFW_SRC} "$ENV{GLFW_SRC}/build")
 
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 add_subdirectory($ENV{ASSIMP_SRC} "$ENV{ASSIMP_SRC}/build")
 
 file(TO_CMAKE_PATH "$ENV{GLAD_SRC}/src/glad.c" GLAD_SRC_C)
+
+set(GLFW_SRC $ENV{GLFW_SRC})
+set(GLAD_SRC $ENV{GLAD_SRC})
+set(GLM_SRC $ENV{GLM_SRC})
+set(ASSIMP_SRC $ENV{ASSIMP_SRC})
+
+set(GLFW_INCLUDE "${GLFW_SRC}/include")
+set(GLAD_INCLUDE "${GLAD_SRC}/include")
+set(GLM_INCLUDE "${GLM_SRC}")
+set(ASSIMP_INCLUDE "${ASSIMP_SRC}/include")
+set(ASSIMP_BUILD_INCLUDE "${ASSIMP_SRC}/build/include")
 
 ##### Info output #####
 message(STATUS "")
@@ -41,6 +53,19 @@ message(STATUS "Project Variables:")
 message(STATUS "  Source Dir:           ${learn-opengl_source_dir}")
 message(STATUS "  Include Dir:          ${learn-opengl_include_dir}")
 message(STATUS "")
+message(STATUS "Dependencies:")
+message(STATUS "  GLFW_SRC:     ${GLFW_SRC}")
+message(STATUS "  GLAD_SRC:     ${GLAD_SRC}")
+message(STATUS "  GLM_SRC:      ${GLM_SRC}")
+message(STATUS "  ASSIMP_SRC:   ${ASSIMP_SRC}")
+message(STATUS "")
+message(STATUS "Dependencies include:")
+message(STATUS "  GLFW:          ${GLFW_INCLUDE}")
+message(STATUS "  GLAD:          ${GLAD_INCLUDE}")
+message(STATUS "  GLM:           ${GLM_INCLUDE}")
+message(STATUS "  ASSIMP:        ${ASSIMP_INCLUDE}")
+message(STATUS "  ASSIMP_BUILD:  ${ASSIMP_BUILD_INCLUDE}")
+message(STATUS "")
 
 #### Build ####
 file(GLOB learn-opengl_source
@@ -49,23 +74,10 @@ file(GLOB learn-opengl_source
 )
 add_executable(learn-opengl ${learn-opengl_source})
 
-
 if(MSVC)
-  set(GLFW_INCLUDE "$ENV{GLFW_SRC}/include")
-  set(GLAD_INCLUDE "$ENV{GLAD_SRC}/include")
-  set(GLM_INCLUDE "$ENV{GLM_SRC}")
-  set(ASSIMP_INCLUDE "$ENV{ASSIMP_SRC}/include")
-  set(ASSIMP_BUILD_INCLUDE "$ENV{ASSIMP_SRC}/build/include")
-
   target_link_libraries(learn-opengl glfw assimp)
 elseif(UNIX)
 # TODO: ...this
-  set(GLFW_INCLUDE "$ENV{GLFW_SRC}/include")
-  set(GLAD_INCLUDE "$ENV{GLAD_SRC}/include")
-  set(GLM_INCLUDE "$ENV{GLM_SRC}")
-  set(ASSIMP_INCLUDE "$ENV{ASSIMP_SRC}/include")
-  set(ASSIMP_BUILD_INCLUDE "$ENV{ASSIMP_SRC}/build/include")
-
   target_link_libraries(learn-opengl glfw3 GL X11 pthread Xrandr Xi dl)
 endif()
 
