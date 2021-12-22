@@ -96,17 +96,15 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
     bool skip = false;
 
     for (unsigned int j = 0; j < textures_loaded.size(); j++) {
-      if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0) {
+      if (std::strcmp(textures_loaded[j].GetPath().data(), str.C_Str()) == 0) {
         textures.push_back(textures_loaded[j]);
         skip = true;
         break;
       }
     }
     if (!skip) {
-      Texture texture;
-      texture.id = TextureFromFile(str.C_Str(), directory);
-      texture.type = typeName;
-      texture.path = str.C_Str();
+      string filename = directory + '/' + str.C_Str();
+      Texture texture(filename, typeName);
     
       textures.push_back(texture);
       textures_loaded.push_back(texture);
@@ -114,50 +112,4 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
   }
 
   return textures;
-}
-
-unsigned int TextureFromFile(const char *path, const string &directory) {
-  int height, width, nChannels;
-  unsigned int texture;
-  string filename = string(path);
-  filename = directory + '/' + filename;
-
-  unsigned char *imageData = stbi_load(filename.c_str(), &width, &height, &nChannels, 0);
-  
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-  if (!imageData) {
-    printf("Failed to load image data from path: %s\n", filename.c_str());
-    return 0;
-  }
-
-  switch (nChannels) {
-    case 1: {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, imageData);
-      break;
-    }
-    case 3: {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-      break;
-    }
-    case 4: {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
-      break;
-    }
-    default: {
-      printf("Unsupported image channels: %d for image at %s\n", nChannels, filename.c_str());
-      stbi_image_free(imageData);
-      return 0;
-    }
-  }
-
-  glGenerateMipmap(GL_TEXTURE_2D);
-  stbi_image_free(imageData);
-
-  return texture;
 }

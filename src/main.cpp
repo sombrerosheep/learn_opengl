@@ -16,6 +16,8 @@
 #include <model.hpp>
 #include <stb_image.h>
 
+#include <texture.hpp>
+
 const int screenHeight = 720;
 const int screenWidth = 1280;
 
@@ -33,7 +35,7 @@ unsigned int load_image(const char *path) {
   unsigned int texture, format;
 
   unsigned char *imageData = stbi_load(path, &width, &height, &nChannels, 0);
-  
+
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
     
