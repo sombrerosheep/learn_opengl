@@ -30,52 +30,52 @@ float lastX = screenHeight / 2.0f;
 float lastY = screenWidth / 2.0f;
 bool firstMouse = true;
 
-unsigned int load_image(const char *path) {
-  int height, width, nChannels;
-  unsigned int texture, format;
+// unsigned int load_image(const char *path) {
+//   int height, width, nChannels;
+//   unsigned int texture, format;
 
-  unsigned char *imageData = stbi_load(path, &width, &height, &nChannels, 0);
+//   unsigned char *imageData = stbi_load(path, &width, &height, &nChannels, 0);
 
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
+//   glGenTextures(1, &texture);
+//   glBindTexture(GL_TEXTURE_2D, texture);
     
-  if (!imageData) {
-    printf("Failed to load image data from path: %s\n", path);
-    return 0;
-  }
+//   if (!imageData) {
+//     printf("Failed to load image data from path: %s\n", path);
+//     return 0;
+//   }
 
-  switch (nChannels) {
-    case 1: {
-      format = GL_RED;
-      break;
-    }
-    case 3: {
-      format = GL_RGB;
-      break;
-    }
-    case 4: {
-      format = GL_RGBA;
-      break;
-    }
-    default: {
-      printf("Unsupported image channels: %d for image at %s\n", nChannels, path);
-      stbi_image_free(imageData);
-      return 0;
-    }
-  }
+//   switch (nChannels) {
+//     case 1: {
+//       format = GL_RED;
+//       break;
+//     }
+//     case 3: {
+//       format = GL_RGB;
+//       break;
+//     }
+//     case 4: {
+//       format = GL_RGBA;
+//       break;
+//     }
+//     default: {
+//       printf("Unsupported image channels: %d for image at %s\n", nChannels, path);
+//       stbi_image_free(imageData);
+//       return 0;
+//     }
+//   }
 
-  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
+//   glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  glGenerateMipmap(GL_TEXTURE_2D);
-  stbi_image_free(imageData);
+//   glGenerateMipmap(GL_TEXTURE_2D);
+//   stbi_image_free(imageData);
 
-  return texture;
-}
+//   return texture;
+// }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -206,9 +206,9 @@ int main(int argc, char** argv) {
     glm::vec3( 0.5f, 0.0f, -0.6f)
   };
 
-  unsigned int texture_marble = load_image("./textures/marble.jpg");
-  unsigned int texture_metal = load_image("./textures/metal.png");
-  unsigned int texture_window = load_image("./textures/blending_transparent_window.png");
+  Texture marble_tex("./textures/marble.jpg", "texture");
+  Texture metal_tex("./textures/metal.png", "texture");
+  Texture window_tex("./textures/blending_transparent_window.png", "texture");
   
   unsigned int floorVAO, floorVBO, floorEBO;
 
@@ -281,7 +281,7 @@ int main(int argc, char** argv) {
 
     textureShader.use();
     glBindVertexArray(floorVAO);
-    glBindTexture(GL_TEXTURE_2D, texture_metal);
+    glBindTexture(GL_TEXTURE_2D, metal_tex.GetID());
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
     textureShader.setInt("tex", 0);
     textureShader.setMat4("projection", projection);
@@ -291,7 +291,7 @@ int main(int argc, char** argv) {
 
     glBindVertexArray(cubeVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
-    glBindTexture(GL_TEXTURE_2D, texture_marble);
+    glBindTexture(GL_TEXTURE_2D, marble_tex.GetID());
     textureShader.setInt("tex", 0);
     textureShader.setMat4("projection", projection);
     textureShader.setMat4("view", view);
@@ -305,7 +305,7 @@ int main(int argc, char** argv) {
     glDisable(GL_CULL_FACE);
     glBindVertexArray(windowVAO);
     glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
-    glBindTexture(GL_TEXTURE_2D, texture_window);
+    glBindTexture(GL_TEXTURE_2D, window_tex.GetID());
     textureShader.setInt("tex", 0);
     textureShader.setMat4("projection", projection);
     textureShader.setMat4("view", view);
