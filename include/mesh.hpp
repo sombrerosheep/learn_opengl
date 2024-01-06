@@ -6,8 +6,8 @@
 #include <shader.hpp>
 #include <texture.hpp>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
 
 using namespace std;
 
@@ -23,8 +23,10 @@ public:
   vector<unsigned int> indices;
   vector<Texture> textures;
 
-  Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
+  Mesh(vector<Vertex> vertices, vector<unsigned int> indices,
+       vector<Texture> textures);
   void Draw(Shader shader);
+
 private:
   unsigned int VAO, VBO, EBO;
   void setupMesh();

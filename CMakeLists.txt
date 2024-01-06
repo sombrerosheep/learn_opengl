@@ -15,7 +15,6 @@ set(learn-opengl_description "learn opengl from learnopengl.com")
 set(learn-opengl_source_dir "${CMAKE_SOURCE_DIR}/src")
 set(learn-opengl_include_dir "${CMAKE_SOURCE_DIR}/include")
 
-# Check for 64 or 32 bit
 set(PROCESSOR_ARCH "x64")
 
 # Dependencies
@@ -31,7 +30,7 @@ file(TO_CMAKE_PATH "$ENV{GLAD_SRC}/src/glad.c" GLAD_SRC_C)
 
 set(GLFW_SRC $ENV{GLFW_SRC})
 set(GLAD_SRC $ENV{GLAD_SRC})
-set(GLM_SRC $ENV{GLM_SRC})
+set(GLM_SRC "$ENV{GLM_SRC}/glm")
 set(ASSIMP_SRC $ENV{ASSIMP_SRC})
 
 set(GLFW_INCLUDE "${GLFW_SRC}/include")
@@ -67,18 +66,25 @@ message(STATUS "  ASSIMP:        ${ASSIMP_INCLUDE}")
 message(STATUS "  ASSIMP_BUILD:  ${ASSIMP_BUILD_INCLUDE}")
 message(STATUS "")
 
-#### Build ####
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Add -g for valgrind
+add_compile_options(-g)
+
 file(GLOB learn-opengl_source
   "${learn-opengl_source_dir}/[a-z0-9_-]*.c*"
   "${GLAD_SRC_C}"
 )
+
 add_executable(learn-opengl ${learn-opengl_source})
 
 if(MSVC)
   target_link_libraries(learn-opengl glfw assimp)
 elseif(UNIX)
-# TODO: ...this
-  target_link_libraries(learn-opengl glfw3 GL X11 pthread Xrandr Xi dl)
+  # target_link_libraries(learn-opengl glfw3 GL X11 pthread Xrandr Xi dl)
+  target_link_libraries(learn-opengl glfw GL X11 pthread Xrandr Xi dl assimp)
+  
+  add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
 target_include_directories(
