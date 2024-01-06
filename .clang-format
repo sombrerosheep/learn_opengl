@@ -1,0 +1,27 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortEnumsOnASingleLine: false
+IndentCaseLabels: true
+
+AlignConsecutiveDeclarations: Consecutive
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveMacros: Consecutive
+
+AlignEscapedNewlines: Left
+AlignTrailingComments: true
+AlignAfterOpenBracket: Align
+
+BinPackParameters: false
+ColumnLimit: 100
+
+AllowAllArgumentsOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+
+BinPackArguments: false
+BinPackParameters: false
+
+SeparateDefinitionBlocks: Always
