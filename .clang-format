@@ -14,7 +14,6 @@ AlignEscapedNewlines: Left
 AlignTrailingComments: true
 AlignAfterOpenBracket: Align
 
-BinPackParameters: false
 ColumnLimit: 100
 
 AllowAllArgumentsOnNextLine: false
