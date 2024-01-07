@@ -1,11 +1,3 @@
-#include <SDL_error.h>
-#include <SDL_keyboard.h>
-#include <SDL_keycode.h>
-#include <SDL_mouse.h>
-#include <SDL_render.h>
-#include <SDL_stdinc.h>
-#include <SDL_timer.h>
-#include <SDL_video.h>
 #include <cmath>
 #include <map>
 #include <stdio.h>
