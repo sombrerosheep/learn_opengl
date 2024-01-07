@@ -34,13 +34,7 @@ Uint64 lastFrame = 0;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-// float lastX = screenHeight / 2.0f;
-// float lastY = screenWidth / 2.0f;
 bool firstMouse = true;
-
-// void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-// glViewport(0, 0, width, height);
-//}
 
 void process_input() {
   const Uint8 *keys = SDL_GetKeyboardState(NULL);
@@ -58,47 +52,6 @@ void process_input() {
     camera.ProcessKeyboard(RIGHT, deltaTime);
   }
 }
-
-// void process_input(GLFWwindow *window) {
-//   float cameraSpeed = 2.5f * deltaTime;
-//
-//   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-//     glfwSetWindowShouldClose(window, true);
-//   }
-//
-//   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-// camera.ProcessKeyboard(FORWARD, deltaTime);
-//}
-// if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-//    camera.ProcessKeyboard(BACKWARD, deltaTime);
-//}
-// if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-//    camera.ProcessKeyboard(LEFT, deltaTime);
-//  }
-//  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-// camera.ProcessKeyboard(RIGHT, deltaTime);
-//}
-//}
-
-// void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
-//   if (firstMouse) {
-// lastX = (float)xpos;
-// lastY = (float)ypos;
-// firstMouse = false;
-//}
-
-// float xOffset = (float)xpos - lastX;
-// float yOffset = lastY - (float)ypos;
-
-// lastX = (float)xpos;
-// lastY = (float)ypos;
-
-// camera.ProcessMouseMovement(xOffset, yOffset);
-//}
-
-// void scroll_callback(GLFWwindow *window, double xOffset, double yOffset) {
-//   camera.ProcessMouseScroll((float)yOffset);
-// }
 
 void logGlInit() {
   printf("Vendor   : %s\n", glGetString(GL_VENDOR));
@@ -130,10 +83,8 @@ int main(int argc, char **argv) {
   }
 
   SDL_Window *window = NULL;
-  if ((window =
-           SDL_CreateWindow("LearnOpenGL", 100, 100, screenWidth, screenHeight,
-                            SDL_WINDOW_OPENGL | SDL_WINDOW_MOUSE_CAPTURE |
-                                SDL_WINDOW_MOUSE_FOCUS)) == NULL) {
+  if ((window = SDL_CreateWindow("LearnOpenGL", 100, 100, screenWidth,
+                                 screenHeight, SDL_WINDOW_OPENGL)) == NULL) {
     printf("Error creating SDL window: %s\n", SDL_GetError());
     return -1;
   }
@@ -155,35 +106,7 @@ int main(int argc, char **argv) {
 
   logGlInit();
 
-  // glfwInit();
-  // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-  // GLFWwindow *window =
-  //    glfwCreateWindow(screenWidth, screenHeight, "LearnOpenGL", NULL, NULL);
-
-  // if (window == NULL) {
-  //   printf("Failed to create GLFW window\n");
-  //   glfwTerminate();
-  //   return -1;
-  // }
-
-  // glfwMakeContextCurrent(window);
-
-  // if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-  //    printf("Failed to initialize GLAD\n");
-  // return -1;
-  // }
-
-  // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-  // glfwSetCursorPosCallback(window, mouse_callback);
-  // glfwSetScrollCallback(window, scroll_callback);
-
-  // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  // SDL_SetWindowInputFocus(window);
-  SDL_ShowCursor(SDL_DISABLE);
-  if (SDL_CaptureMouse(SDL_TRUE) != 0) {
+  if (SDL_SetRelativeMouseMode(SDL_TRUE) != 0) {
     printf("Error capturing mouse: %s\n", SDL_GetError());
   }
 
@@ -339,16 +262,9 @@ int main(int argc, char **argv) {
       }
     }
 
-    // while (!glfwWindowShouldClose(window)) {
-    // float currentFrame = (float)glfwGetTime();
-    // deltaTime = currentFrame - lastFrame;
-    // lastFrame = currentFrame;
-
     Uint64 frame_ticks = SDL_GetTicks();
     deltaTime = (float)(frame_ticks - lastFrame) / 1000.f;
     lastFrame = frame_ticks;
-
-    // process_input(window);
 
     process_input();
 
@@ -409,11 +325,7 @@ int main(int argc, char **argv) {
       glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
-    // glfwSwapBuffers(window); // Couldn't find what to do with SDL so we'll
-    // see..
     SDL_GL_SwapWindow(window);
-
-    // glfwPollEvents();
   }
 
   glDeleteVertexArrays(1, &floorVAO);
@@ -423,7 +335,6 @@ int main(int argc, char **argv) {
   glDeleteBuffers(1, &floorEBO);
   glDeleteBuffers(1, &cubeEBO);
 
-  // glfwTerminate();
   SDL_DestroyWindow(window);
   return 0;
 }
