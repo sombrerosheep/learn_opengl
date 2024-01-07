@@ -162,15 +162,15 @@ int main(int argc, char **argv) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), planeIndices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, (void *)0);
 
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1,
                           2,
                           GL_FLOAT,
                           GL_FALSE,
-                          sizeof(GL_FLOAT) * 5,
-                          (void *)(sizeof(GL_FLOAT) * 3));
+                          sizeof(GLfloat) * 5,
+                          (void *)(sizeof(GLfloat) * 3));
 
     unsigned int windowVAO, windowVBO;
     glGenVertexArrays(1, &windowVAO);
@@ -181,15 +181,15 @@ int main(int argc, char **argv) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(window_verts), window_verts, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, (void *)0);
 
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1,
                           2,
                           GL_FLOAT,
                           GL_FALSE,
-                          sizeof(GL_FLOAT) * 5,
-                          (void *)(sizeof(GL_FLOAT) * 3));
+                          sizeof(GLfloat) * 5,
+                          (void *)(sizeof(GLfloat) * 3));
 
     unsigned int cubeVAO, cubeVBO, cubeEBO;
     glGenVertexArrays(1, &cubeVAO);
@@ -204,15 +204,15 @@ int main(int argc, char **argv) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 5, (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, (void *)0);
 
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1,
                           2,
                           GL_FLOAT,
                           GL_FALSE,
-                          sizeof(GL_FLOAT) * 5,
-                          (void *)(sizeof(GL_FLOAT) * 3));
+                          sizeof(GLfloat) * 5,
+                          (void *)(sizeof(GLfloat) * 3));
 
     SDL_Event event;
 
