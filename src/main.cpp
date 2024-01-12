@@ -1,3 +1,4 @@
+#include <SDL_video.h>
 #include <cmath>
 #include <map>
 #include <stdio.h>
@@ -77,7 +78,7 @@ int main(int argc, char **argv) {
                                    100,
                                    screenWidth,
                                    screenHeight,
-                                   SDL_WINDOW_OPENGL)) == NULL) {
+                                   SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE)) == NULL) {
         printf("Error creating SDL window: %s\n", SDL_GetError());
         return -1;
     }
@@ -110,43 +111,11 @@ int main(int argc, char **argv) {
 
     Shader textureShader("shaders/texture/basic.vert", "shaders/texture/basic.frag");
 
-    float cubeVertexData[] = {
-        0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, // 0
-        -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, // 1
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // 2
-        0.5f,  -0.5f, -0.5f, 1.0f, 0.0f, // 3
-        0.5f,  0.5f,  0.5f,  0.0f, 0.0f, // 4
-        -0.5f, 0.5f,  0.5f,  1.0f, 0.0f, // 5
-        -0.5f, -0.5f, 0.5f,  1.0f, 1.0f, // 6
-        0.5f,  -0.5f, 0.5f,  0.0f, 1.0f  // 7
-    };
-    glm::vec3 cubePositions[] = {glm::vec3(-1.0f, 0.0f, -1.0f), glm::vec3(2.0f, 0.0f, 0.0f)};
-    float planeVertexData[]   = {5.0f,  -0.51f, 5.0f,  2.0f, 0.0f, -5.0f, -0.51f, 5.0f,  0.0f, 0.0,
+    // Floor
+    Texture metal_tex("./textures/metal.png", "texture");
+    float   planeVertexData[] = {5.0f,  -0.51f, 5.0f,  2.0f, 0.0f, -5.0f, -0.51f, 5.0f,  0.0f, 0.0,
                                  -5.0f, -0.51f, -5.0f, 0.0f, 2.0f, 5.0f,  -0.51f, -5.0f, 2.0f, 2.0f};
     unsigned int planeIndices[] = {0, 1, 2, 2, 3, 0};
-    unsigned int cubeIndices[]  = {
-        0, 1, 2, 2, 3, 0, // front
-        4, 0, 3, 3, 7, 4, // right
-        4, 7, 6, 6, 5, 4, // back
-        1, 5, 6, 6, 2, 1, // left
-        4, 5, 1, 1, 0, 4, // top
-        3, 2, 6, 6, 7, 3  // bottom
-    };
-    unsigned int num_windows    = 5;
-    float        window_verts[] = {
-        -0.5f, 0.5f,  0.0f, 0.0f, 0.0f, 0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
-        0.5f,  -0.5f, 0.0f, 1.0f, 1.0f, 0.5f,  -0.5f, 0.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, -0.5f, 0.5f,  0.0f, 0.0f, 0.0f,
-    };
-    glm::vec3 windows[] = {glm::vec3(-1.0f, 0.0f, -0.48f),
-                           glm::vec3(2.0f, 0.0f, 0.51f),
-                           glm::vec3(0.0f, 0.0f, 0.7f),
-                           glm::vec3(-0.3f, 0.0f, -2.3f),
-                           glm::vec3(0.5f, 0.0f, -0.6f)};
-
-    Texture marble_tex("./textures/marble.jpg", "texture");
-    Texture metal_tex("./textures/metal.png", "texture");
-    Texture window_tex("./textures/blending_transparent_window.png", "texture");
 
     unsigned int floorVAO, floorVBO, floorEBO;
 
@@ -171,25 +140,29 @@ int main(int argc, char **argv) {
                           GL_FALSE,
                           sizeof(GLfloat) * 5,
                           (void *)(sizeof(GLfloat) * 3));
+    // End Floor
 
-    unsigned int windowVAO, windowVBO;
-    glGenVertexArrays(1, &windowVAO);
-    glGenBuffers(1, &windowVBO);
-
-    glBindVertexArray(windowVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(window_verts), window_verts, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, (void *)0);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1,
-                          2,
-                          GL_FLOAT,
-                          GL_FALSE,
-                          sizeof(GLfloat) * 5,
-                          (void *)(sizeof(GLfloat) * 3));
+    // Cubes
+    Texture marble_tex("./textures/marble.jpg", "texture");
+    float   cubeVertexData[] = {
+        0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, // 0
+        -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, // 1
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // 2
+        0.5f,  -0.5f, -0.5f, 1.0f, 0.0f, // 3
+        0.5f,  0.5f,  0.5f,  0.0f, 0.0f, // 4
+        -0.5f, 0.5f,  0.5f,  1.0f, 0.0f, // 5
+        -0.5f, -0.5f, 0.5f,  1.0f, 1.0f, // 6
+        0.5f,  -0.5f, 0.5f,  0.0f, 1.0f  // 7
+    };
+    unsigned int cubeIndices[] = {
+        0, 1, 2, 2, 3, 0, // front
+        4, 0, 3, 3, 7, 4, // right
+        4, 7, 6, 6, 5, 4, // back
+        1, 5, 6, 6, 2, 1, // left
+        4, 5, 1, 1, 0, 4, // top
+        3, 2, 6, 6, 7, 3  // bottom
+    };
+    glm::vec3 cubePositions[] = {glm::vec3(-1.0f, 0.0f, -1.0f), glm::vec3(2.0f, 0.0f, 0.0f)};
 
     unsigned int cubeVAO, cubeVBO, cubeEBO;
     glGenVertexArrays(1, &cubeVAO);
@@ -213,6 +186,48 @@ int main(int argc, char **argv) {
                           GL_FALSE,
                           sizeof(GLfloat) * 5,
                           (void *)(sizeof(GLfloat) * 3));
+    // End Cubes
+
+    // Windows
+    Texture      window_tex("./textures/blending_transparent_window.png", "texture");
+    unsigned int num_windows        = 5;
+    float        windowVertexData[] = {
+        -0.5f, 0.5f,  0.0f, 0.0f, 0.0f, // top left
+        0.5f,  0.5f,  0.0f, 1.0f, 0.0f, // top right
+        0.5f,  -0.5f, 0.0f, 1.0f, 1.0f, // bottom left
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom right
+    };
+    unsigned int windowIndices[]   = {0, 1, 2, 2, 3, 0};
+    glm::vec3    windowPositions[] = {glm::vec3(-1.0f, 0.0f, -0.48f),
+                                      glm::vec3(2.0f, 0.0f, 0.51f),
+                                      glm::vec3(0.0f, 0.0f, 0.7f),
+                                      glm::vec3(-0.3f, 0.0f, -2.3f),
+                                      glm::vec3(0.5f, 0.0f, -0.6f)};
+
+    unsigned int windowVAO, windowVBO, windowEBO;
+    glGenVertexArrays(1, &windowVAO);
+    glGenBuffers(1, &windowVBO);
+    glGenBuffers(1, &windowEBO);
+
+    glBindVertexArray(windowVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(windowVertexData), windowVertexData, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, windowEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(windowIndices), windowIndices, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, (void *)0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1,
+                          2,
+                          GL_FLOAT,
+                          GL_FALSE,
+                          sizeof(GLfloat) * 5,
+                          (void *)(sizeof(GLfloat) * 3));
+
+    // End Windows
 
     SDL_Event event;
 
@@ -277,9 +292,10 @@ int main(int argc, char **argv) {
         glActiveTexture(GL_TEXTURE0);
 
         textureShader.use();
+
         glBindVertexArray(floorVAO);
-        glBindTexture(GL_TEXTURE_2D, metal_tex.GetID());
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+        glBindTexture(GL_TEXTURE_2D, metal_tex.GetID());
         textureShader.setInt("tex", 0);
         textureShader.setMat4("projection", projection);
         textureShader.setMat4("view", view);
@@ -300,16 +316,17 @@ int main(int argc, char **argv) {
         }
 
         glDisable(GL_CULL_FACE);
+
         glBindVertexArray(windowVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, windowVBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, windowEBO);
         glBindTexture(GL_TEXTURE_2D, window_tex.GetID());
         textureShader.setInt("tex", 0);
         textureShader.setMat4("projection", projection);
         textureShader.setMat4("view", view);
         std::map<float, glm::vec3> sorted;
         for (unsigned int i = 0; i < num_windows; i++) {
-            float distance   = glm::length(camera.Position - windows[i]);
-            sorted[distance] = windows[i];
+            float distance   = glm::length(camera.Position - windowPositions[i]);
+            sorted[distance] = windowPositions[i];
         }
 
         for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend();
@@ -317,7 +334,7 @@ int main(int argc, char **argv) {
             model = glm::mat4(1.0f);
             model = glm::translate(model, it->second);
             textureShader.setMat4("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glDrawElements(GL_TRIANGLES, sizeof(windowIndices), GL_UNSIGNED_INT, 0);
         }
 
         SDL_GL_SwapWindow(window);
